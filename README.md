@@ -1,5 +1,7 @@
 # Killfrenzy
 ## Requirements
 ```bash
-python -m pip install Django
+python3 -m pip install django
+python3 -m pip install django-background-tasks
+python3 -m pip install websockets
 ```
