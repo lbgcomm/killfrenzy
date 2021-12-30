@@ -1,12 +1,22 @@
 from django.db import models
+from django.db.models.fields.related import ForeignKey
 
 # Edge module.
 class Edge(models.Model):
+    name = models.CharField(verbose_name="name", help_text="Display name of edge.", max_length=32, blank=True)
     ip = models.CharField(verbose_name="IP", help_text="The edge server IP.", max_length=32)
 
     bgp = models.BooleanField(verbose_name="Enable BGP (AKA Announce)", help_text="Whether to enable BGP.", default=True)
 
-    # Statistics.
+    status = models.BooleanField(verbose_name="Status", editable=False, default=False)
+
+    def __str__(self):
+        return self.ip
+
+class Edge_Stats(models.Model):
+    edge_id = models.ForeignKey(Edge, on_delete=models.DO_NOTHING)
+    sdate = models.DateTimeField(auto_now=True)
+
     bla_pckts = models.BigIntegerField(null=True, editable=False)
     bla_pckts_ps = models.BigIntegerField(null=True, editable=False)
 
@@ -30,6 +40,12 @@ class Edge(models.Model):
 
     fwd_bytes = models.BigIntegerField(null=True, editable=False)
     fwd_bytes_ps = models.BigIntegerField(null=True, editable=False)
+
+    fwdo_pckts = models.BigIntegerField(null=True, editable=False)
+    fwdo_pckts_ps = models.BigIntegerField(null=True, editable=False)
+
+    fwdo_bytes = models.BigIntegerField(null=True, editable=False)
+    fwdo_bytes_ps = models.BigIntegerField(null=True, editable=False)
 
     pass_pckts = models.BigIntegerField(null=True, editable=False)
     pass_pckts_ps = models.BigIntegerField(null=True, editable=False)
@@ -67,9 +83,6 @@ class Edge(models.Model):
     drc_bytes = models.BigIntegerField(null=True, editable=False)
     drc_bytes_ps = models.BigIntegerField(null=True, editable=False)
 
-    def __str__(self):
-        return self.ip
-
 class Edge_Settings(models.Model):
     class ForceMode(models.IntegerChoices):
         NONE = 0, "None (DRV)"
@@ -94,7 +107,7 @@ class Edge_Settings(models.Model):
         verbose_name = "edge setting"
 
     def __str__(self):
-        return self.edge_id.ip +  "Settings"
+        return self.edge_id.ip +  " Settings"
 
 # Connection module.
 class Connection(models.Model):
@@ -132,12 +145,76 @@ class Connection(models.Model):
     a2s_info_enabled = models.BooleanField(verbose_name="A2S_INFO Caching", help_text="Whether to enable A2S_INFO caching", default=False)
     a2s_info_cache_time = models.IntegerField(verbose_name="A2S_INFO Cache Time", help_text="A2S_INFO cache time if enabled", default=45)
 
+    pps = models.BigIntegerField(null=True, editable=False)
+    bps = models.BigIntegerField(null=True, editable=False)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+        conn = {}
+        conn["enabled"] = self.enabled
+        conn["bind_ip"] = self.bind_ip
+        conn["bind_port"] = self.bind_port
+        conn["dest_ip"] = self.dest_ip
+        conn["dest_port"] = self.dest_port
+        conn["filters"] = self.filters
+
+        conn["udp_rl"] = {}
+        conn["udp_rl"]["block_time"] = self.udp_rl_bl
+        conn["udp_rl"]["pps"] = self.udp_rl_pps
+        conn["udp_rl"]["bps"] = self.udp_rl_bps
+
+        conn["tcp_rl"] = {}
+        conn["tcp_rl"]["block_time"] = self.tcp_rl_bl
+        conn["tcp_rl"]["pps"] = self.tcp_rl_pps
+        conn["tcp_rl"]["bps"] = self.tcp_rl_bps
+
+        conn["icmp_rl"] = {}
+        conn["icmp_rl"]["block_time"] = self.icmp_rl_bl
+        conn["icmp_rl"]["pps"] = self.icmp_rl_pps
+        conn["icmp_rl"]["bps"] = self.icmp_rl_bps
+        
+        conn["syn_settings"] = {}
+        conn["syn_settings"]["rl"] = {}
+        conn["syn_settings"]["rl"]["block_time"] = self.syn_rl_bl
+        conn["syn_settings"]["rl"]["pps"] = self.syn_rl_pps
+        conn["syn_settings"]["rl"]["bps"] = self.syn_rl_bps
+
+        conn["cache_settings"] = {}
+        conn["cache_settings"]["a2s_info_enabled"] = self.a2s_info_enabled
+        conn["cache_settings"]["a2s_info_cache_time"] = self.a2s_info_cache_time
+        ret.append(conn)
+
+        import asyncio
+        import web_socket
+        asyncio.run(web_socket.prepare_and_send_data("conn_update", connections=ret))
+
     def __str__(self):
         return self.bind_ip + ":" + str(self.bind_port)
+
+class Connection_Stats(models.Model):
+    connection_id = ForeignKey(Connection, on_delete=models.DO_NOTHING)
+    pps = models.BigIntegerField(null=True, editable=False)
+    bps = models.BigIntegerField(null=True, editable=False)
 
 class Whitelist(models.Model):
     auto_added = models.BooleanField(verbose_name="Auto Added", help_text="Whether this was added by system", editable=False, default=False)
     prefix = models.CharField(verbose_name="Prefix", help_text="The prefix in IP/CIDR format", max_length=32)
+
+    class Meta:
+        verbose_name_plural = "whitelist IPs"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+
+        ret.append(self.prefix)
+
+        import asyncio
+        import web_socket
+        asyncio.run(web_socket.prepare_and_send_data("whitelist_update", whitelist=ret))
 
     def __str__(self):
         return self.prefix
@@ -145,6 +222,22 @@ class Whitelist(models.Model):
 class Blacklist(models.Model):
     auto_added = models.BooleanField(verbose_name="Auto Added", help_text="Whether this was added by system", editable=False, default=False)
     prefix = models.CharField(verbose_name="Prefix", help_text="The prefix in IP/CIDR format", max_length=32)
+
+    class Meta:
+        verbose_name_plural = "blacklist IPs"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+
+        ret.append(self.prefix)
+
+        print("From save " + str(ret))
+
+        import asyncio
+        import web_socket
+        asyncio.run(web_socket.prepare_and_send_data("blacklist_update", blacklist=ret))
 
     def __str__(self):
         return self.prefix
@@ -156,6 +249,21 @@ class Port_Punch(models.Model):
 
     def __str__(self):
         return self.ip + ":" + str(self.port)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+        pp = {}
+
+        pp["ip"] = self.ip
+        pp["port"] = self.port
+
+        ret.append(pp)
+
+        import asyncio
+        import web_socket
+        asyncio.run(web_socket.prepare_and_send_data("port_punch_update", port_punch=ret))
 
     class Meta:
         verbose_name = "port punch"
