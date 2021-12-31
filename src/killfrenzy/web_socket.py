@@ -20,7 +20,7 @@ def get_edge_settings(edge):
 
 @sync_to_async
 def get_connections():
-    return list(Connection.objects.all().values_list('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time'))
+    return list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time'))
 
 @sync_to_async
 def get_whitelist():
@@ -32,7 +32,25 @@ def get_blacklist():
 
 @sync_to_async
 def get_port_punch():
-    return list(Port_Punch.objects.all().values('ip', 'port'))
+    return list(Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port'))
+
+@sync_to_async
+def update_stats(edge, stat_data):
+    stat = Edge_Stats(edge_id=edge, bla_pckts=stat_data["bla_pk"], bla_pckts_ps=stat_data["bla_pps"], bla_bytes=stat_data["bla_by"], bla_bytes_ps=stat_data["bla_bps"], whi_pckts=stat_data["whi_pk"], whi_pckts_ps=stat_data["whi_pps"], whi_bytes=stat_data["whi_by"], whi_bytes_ps=stat_data["whi_bps"], blo_pckts=stat_data["blo_pk"], blo_pckts_ps=stat_data["blo_pps"], blo_bytes=stat_data["blo_by"], blo_bytes_ps=stat_data["blo_bps"], pass_pckts=stat_data["pass_pk"], pass_pckts_ps=stat_data["pass_pps"], pass_bytes=stat_data["pass_by"], pass_bytes_ps=stat_data["pass_bps"], fwd_pckts=stat_data["fwd_pk"], fwd_pckts_ps=stat_data["pass_pps"], fwd_bytes=stat_data["pass_by"], fwd_bytes_ps=stat_data["pass_bps"], fwdo_pckts=stat_data["fwdo_pk"], fwdo_pckts_ps=stat_data["fwdo_pps"], fwdo_bytes=stat_data["fwdo_by"], fwdo_bytes_ps=stat_data["fwdo_bps"], bad_pckts=stat_data["bad_pk"], bad_pckts_ps=stat_data["bad_pps"], bad_bytes=stat_data["bad_by"], bad_bytes_ps=stat_data["bad_bps"], a2rp_pckts=stat_data["a2rp_pk"], a2rp_pckts_ps=stat_data["a2rp_pps"], a2rp_bytes=stat_data["a2rp_by"], a2rp_bytes_ps=stat_data["a2rp_bps"], a2rs_pckts=stat_data["a2rs_pk"], a2rs_pckts_ps=stat_data["a2rs_pps"], a2rs_bytes=stat_data["a2rs_by"], a2rs_bytes_ps=stat_data["a2rs_bps"], dro_pckts=stat_data["dro_pk"], dro_pckts_ps=stat_data["dro_pps"], dro_bytes=stat_data["dro_by"], dro_bytes_ps=stat_data["dro_bps"], drc_pckts=stat_data["drc_pk"], drc_pckts_ps=stat_data["drc_pps"], drc_bytes=stat_data["drc_by"], drc_bytes_ps=stat_data["drc_bps"])
+
+    stat.save()
+
+@sync_to_async
+def push_port_punch(pp_data):
+    pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"])
+
+    pp.save()
+
+@sync_to_async
+def set_edge_status(edge, status):
+    edge.status = status
+
+    edge.save()
 
 def to_dict(instance):
     opts = instance._meta
@@ -201,8 +219,7 @@ async def handler(client):
             conns.remove(client)
 
             if edge is not None:
-                edge.status = False
-                edge.save()
+                await set_edge_status(edge, False)
 
             break
 
@@ -227,40 +244,76 @@ async def handler(client):
                     await client.close()
 
                     break
+                
+                # Set to online.
+                await set_edge_status(edge, True)
 
                 # Make sure we have valid data.
                 if "type" not in info:
                     continue
 
                 if info["type"] == "full_update":
-                    await prepare_and_send_data("full_update", client, settings={}, connections=[], whitelist=[], blacklist=[], port_punch=[])
+                    try:
+                        await prepare_and_send_data("full_update", client, settings={}, connections=[], whitelist=[], blacklist=[], port_punch=[])
+                    except Exception as e:
+                        print("Failed to process full update.")
+                        print(e)
                 if info["type"] == "settings":
-                    await prepare_and_send_data("settings", client, settings={})
+                    try:
+                        await prepare_and_send_data("settings", client, settings={})
+                    except Exception as e:
+                        print("Failed to process settings update.")
+                        print(e)
                 elif info["type"] == "connections":
-                    await prepare_and_send_data("connections", client, connections=[])
+                    try:
+                        await prepare_and_send_data("connections", client, connections=[])
+                    except Exception as e:
+                        print("Failed to process connections update.")
+                        print(e)
                 elif info["type"] == "whitelist":
-                    await prepare_and_send_data("whitelist", client, whitelist=[])
+                    try:
+                        await prepare_and_send_data("whitelist", client, whitelist=[])
+                    except Exception as e:
+                        print("Failed to process whitelist update.")
+                        print(e)
                 elif info["type"] == "blacklist":
-                    await prepare_and_send_data("blacklist", client, blacklist=[])
+                    try:
+                        await prepare_and_send_data("blacklist", client, blacklist=[])
+                    except Exception as e:
+                        print("Failed to process blacklist update.")
+                        print(e)
                 elif info["type"] == "port_punch":
-                    await prepare_and_send_data("port_punch", client, port_punch=[])
-                
+                    try:
+                        await prepare_and_send_data("port_punch", client, port_punch=[])
+                    except Exception as e:
+                        print("Failed to process port punch update.")
+                        print(e)
                 elif info["type"] == "push_stats":
                     if "data" not in info:
                         continue
 
                     stat_data = info["data"]
-                    
-                    stat = Edge_Stats(edge_id=edge.id, bla_pckts=stat_data["bla_pckts"], bla_pckts_ps=stat_data["bla_pckts_ps"], bla_bytes=stat_data["bla_bytes"], bla_bytes_ps=stat_data["bla_bytes_ps"], whi_pckts=stat_data["whi_pckts"], whi_pckts_ps=stat_data["whi_pckts_ps"], whi_bytes=stat_data["whi_bytes"], whi_bytes_ps=stat_data["whi_bytes_ps"], blo_pckts=stat_data["blo_pckts"], blo_pckts_ps=stat_data["blo_pckts_ps"], blo_bytes=stat_data["blo_bytes"], blo_bytes_ps=stat_data["blo_bytes_ps"], pass_pckts=stat_data["pass_pckts"], pass_pckts_ps=stat_data["pass_pckts_ps"], pass_bytes=stat_data["pass_bytes"], pass_bytes_ps=stat_data["pass_bytes_ps"], fwd_pckts=stat_data["fwd_pckts"], fwd_pckts_ps=stat_data["pass_pckts_ps"], fwd_bytes=stat_data["pass_bytes"], fwd_bytes_ps=stat_data["pass_bytes_ps"], fwdo_pckts=stat_data["fwdo_pckts"], fwdo_pckts_ps=stat_data["fwdo_pckts_ps"], fwdo_bytes=stat_data["fwdo_bytes"], fwdo_bytes_ps=stat_data["fwdo_bytes_ps"], bad_pckts=stat_data["bad_pckts"], bad_pckts_ps=stat_data["bad_pckts_ps"], bad_bytes=stat_data["bad_bytes"], bad_bytes_ps=stat_data["bad_bytes_ps"], a2rp_pckts=stat_data["a2rp_pckts"], a2rp_pckts_ps=stat_data["a2rp_pckts_ps"], a2rp_bytes=stat_data["a2rp_bytes"], a2rp_bytes_ps=stat_data["a2rp_bytes_ps"], a2rs_pckts=stat_data["a2rs_pckts"], a2rs_pckts_ps=stat_data["a2rs_pckts_ps"], a2rs_bytes=stat_data["a2rs_bytes"], a2rs_bytes_ps=stat_data["a2rs_bytes_ps"], dro_pckts=stat_data["dro_pckts"], dro_pckts_ps=stat_data["dro_pckts_ps"], dro_bytes=stat_data["dro_bytes"], dro_bytes_ps=stat_data["dro_bytes_ps"], drc_pckts=stat_data["drc_pckts"], drc_pckts_ps=stat_data["drc_pckts_ps"], drc_bytes=stat_data["drc_bytes"], drc_bytes_ps=stat_data["drc_bytes_ps"])
-                    stat.save()
-                elif info["type"] == "push_port_punch":
+
+                    try:
+                        await update_stats(edge, stat_data)
+                    except Exception as e:
+                        print("Invalid stat data push.")
+                        print(e)
+
+                        continue
+                elif info["type"] == "push_port_punch.":
                     if "data" not in info:
                         continue
 
                     pp_data = info["data"]
 
-                    pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"])
-                    pp.save()
+                    try:
+                        await push_port_punch(pp_data)
+                    except Exception as e:
+                        print("Invalid port punch push")
+                        print(e)
+
+                        continue
 
         except websockets.exceptions.ConnectionClosedError:
             print("Closing connection...")

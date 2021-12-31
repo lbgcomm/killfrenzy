@@ -247,6 +247,9 @@ class Port_Punch(models.Model):
     ip = models.CharField(verbose_name="IP Address", help_text="IP address", max_length=32)
     port = models.IntegerField(verbose_name="Port", help_text="Port", default=0)
 
+    service_ip = models.CharField(verbose_name="Service IP Address", help_text="Service IP address", max_length=32)
+    service_port = models.IntegerField(verbose_name="Service Port", help_text="Service Port", default=0)
+
     def __str__(self):
         return self.ip + ":" + str(self.port)
 
@@ -258,6 +261,8 @@ class Port_Punch(models.Model):
 
         pp["ip"] = self.ip
         pp["port"] = self.port
+        pp["service_ip"] = self.service_ip
+        pp["service_port"] = self.service_port
 
         ret.append(pp)
 
