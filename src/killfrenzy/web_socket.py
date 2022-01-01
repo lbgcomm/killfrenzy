@@ -78,8 +78,6 @@ def get_connections():
         new_v.pop("a2s_info_enabled")
         new_v.pop("a2s_info_cache_time")
 
-        print("Got here!")
-
         conns_return.append(new_v)
 
     return list(conns_return)
@@ -104,7 +102,7 @@ def update_stats(edge, stat_data):
 
 @sync_to_async
 def push_port_punch(pp_data):
-    pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"])
+    pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"])
 
     pp.save()
 
@@ -146,13 +144,11 @@ async def prepare_and_send_data(update_type="full_update", edge=None, settings=N
 
             continue
 
-        print("Found edge for " + update_type)
-
         # Retrieve IP and port.
         ip = edge_conn.remote_address[0]
         port = edge_conn.remote_address[1]
 
-        print("Sending data with type " + update_type + " to " + ip + ":" + str(port) + "...")
+        #print("Sending data with type " + update_type + " to " + ip + ":" + str(port) + "...")
 
         # Make sure the edge exists in our database.
         edge_obj = await get_edge(ip)
@@ -263,7 +259,7 @@ async def prepare_and_send_data(update_type="full_update", edge=None, settings=N
                 for p in port_punch:
                     ret["data"]["port_punch"].append(p)
 
-        print("Sending to " + ip + ":" + str(port) + " => " + json.dumps(ret))
+        #print("Sending to " + ip + ":" + str(port) + " => " + json.dumps(ret))
         await edge_conn.send(json.dumps(ret))
         
         i = i + 1
@@ -273,7 +269,7 @@ async def handler(client):
     ip = client.remote_address[0]
     port = client.remote_address[1]
     edge = None
-    
+
     while True:
         if client.open is False:
             print("Connection from " + ip + ":" + str(port) + " ended.")
