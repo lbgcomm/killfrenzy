@@ -252,6 +252,8 @@ class Port_Punch(models.Model):
     service_ip = models.CharField(verbose_name="Service IP Address", help_text="Service IP address", max_length=32)
     service_port = models.IntegerField(verbose_name="Service Port", help_text="Service Port", default=0)
 
+    dest_ip = models.CharField(verbose_name="Destination IP Address", help_text="The game server machine's IP address", max_length=32)
+
     def __str__(self):
         return self.ip + ":" + str(self.port)
 
@@ -265,6 +267,8 @@ class Port_Punch(models.Model):
         pp["port"] = self.port
         pp["service_ip"] = self.service_ip
         pp["service_port"] = self.service_port
+        
+        pp["dest_ip"] = self.dest_ip
 
         ret.append(pp)
 
