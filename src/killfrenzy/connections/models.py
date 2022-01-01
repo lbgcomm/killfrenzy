@@ -83,6 +83,8 @@ class Edge_Stats(models.Model):
     drc_bytes = models.BigIntegerField(null=True, editable=False)
     drc_bytes_ps = models.BigIntegerField(null=True, editable=False)
 
+    cpu_load = models.BigIntegerField(null=True, editable=False)
+
 class Edge_Settings(models.Model):
     class ForceMode(models.IntegerChoices):
         NONE = 0, "None (DRV)"

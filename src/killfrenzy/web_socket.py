@@ -20,7 +20,69 @@ def get_edge_settings(edge):
 
 @sync_to_async
 def get_connections():
-    return list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time'))
+    conns = list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time'))
+    conns_return = []
+
+    for v in conns:
+        if v is None:
+            continue
+
+        new_v = {}
+
+        new_v = v.copy()
+
+        if new_v is None:
+            continue
+
+        new_v["udp_rl"] = {}
+        new_v["udp_rl"]["block_time"] = new_v["udp_rl_bl"]
+        new_v["udp_rl"]["pps"] = new_v["udp_rl_pps"]
+        new_v["udp_rl"]["bps"] = new_v["udp_rl_bps"]
+
+        new_v["tcp_rl"] = {}
+        new_v["tcp_rl"]["block_time"] = new_v["tcp_rl_bl"]
+        new_v["tcp_rl"]["pps"] = new_v["tcp_rl_pps"]
+        new_v["tcp_rl"]["bps"] = new_v["tcp_rl_bps"]
+
+        new_v["icmp_rl"] = {}
+        new_v["icmp_rl"]["block_time"] = new_v["icmp_rl_bl"]
+        new_v["icmp_rl"]["pps"] = new_v["icmp_rl_pps"]
+        new_v["icmp_rl"]["bps"] = new_v["icmp_rl_bps"]
+
+        new_v["syn_settings"] = {}
+        new_v["syn_settings"]["rl"] = {}
+        new_v["syn_settings"]["rl"]["block_time"] = new_v["syn_rl_bl"]
+        new_v["syn_settings"]["rl"]["pps"] = new_v["syn_rl_pps"]
+        new_v["syn_settings"]["rl"]["bps"] = new_v["syn_rl_bps"]
+
+        new_v["cache_settings"] = {}
+        new_v["cache_settings"]["a2s_info_enabled"] = new_v["a2s_info_enabled"]
+        new_v["cache_settings"]["a2s_info_cache_time"] = new_v["a2s_info_cache_time"]
+
+        new_v.pop("udp_rl_bl")
+        new_v.pop("udp_rl_pps")
+        new_v.pop("udp_rl_bps")
+
+        new_v.pop("tcp_rl_bl")
+        new_v.pop("tcp_rl_pps")
+        new_v.pop("tcp_rl_bps")
+
+        new_v.pop("icmp_rl_bl")
+        new_v.pop("icmp_rl_pps")
+        new_v.pop("icmp_rl_bps")
+
+        new_v.pop("syn_rl_bl")
+        new_v.pop("syn_rl_pps")
+        new_v.pop("syn_rl_bps")
+
+        new_v.pop("a2s_info_enabled")
+        new_v.pop("a2s_info_cache_time")
+
+        print("Got here!")
+
+        conns_return.append(new_v)
+
+    return list(conns_return)
 
 @sync_to_async
 def get_whitelist():
@@ -36,7 +98,7 @@ def get_port_punch():
 
 @sync_to_async
 def update_stats(edge, stat_data):
-    stat = Edge_Stats(edge_id=edge, bla_pckts=stat_data["bla_pk"], bla_pckts_ps=stat_data["bla_pps"], bla_bytes=stat_data["bla_by"], bla_bytes_ps=stat_data["bla_bps"], whi_pckts=stat_data["whi_pk"], whi_pckts_ps=stat_data["whi_pps"], whi_bytes=stat_data["whi_by"], whi_bytes_ps=stat_data["whi_bps"], blo_pckts=stat_data["blo_pk"], blo_pckts_ps=stat_data["blo_pps"], blo_bytes=stat_data["blo_by"], blo_bytes_ps=stat_data["blo_bps"], pass_pckts=stat_data["pass_pk"], pass_pckts_ps=stat_data["pass_pps"], pass_bytes=stat_data["pass_by"], pass_bytes_ps=stat_data["pass_bps"], fwd_pckts=stat_data["fwd_pk"], fwd_pckts_ps=stat_data["pass_pps"], fwd_bytes=stat_data["pass_by"], fwd_bytes_ps=stat_data["pass_bps"], fwdo_pckts=stat_data["fwdo_pk"], fwdo_pckts_ps=stat_data["fwdo_pps"], fwdo_bytes=stat_data["fwdo_by"], fwdo_bytes_ps=stat_data["fwdo_bps"], bad_pckts=stat_data["bad_pk"], bad_pckts_ps=stat_data["bad_pps"], bad_bytes=stat_data["bad_by"], bad_bytes_ps=stat_data["bad_bps"], a2rp_pckts=stat_data["a2rp_pk"], a2rp_pckts_ps=stat_data["a2rp_pps"], a2rp_bytes=stat_data["a2rp_by"], a2rp_bytes_ps=stat_data["a2rp_bps"], a2rs_pckts=stat_data["a2rs_pk"], a2rs_pckts_ps=stat_data["a2rs_pps"], a2rs_bytes=stat_data["a2rs_by"], a2rs_bytes_ps=stat_data["a2rs_bps"], dro_pckts=stat_data["dro_pk"], dro_pckts_ps=stat_data["dro_pps"], dro_bytes=stat_data["dro_by"], dro_bytes_ps=stat_data["dro_bps"], drc_pckts=stat_data["drc_pk"], drc_pckts_ps=stat_data["drc_pps"], drc_bytes=stat_data["drc_by"], drc_bytes_ps=stat_data["drc_bps"])
+    stat = Edge_Stats(edge_id=edge, bla_pckts=stat_data["bla_pk"], bla_pckts_ps=stat_data["bla_pps"], bla_bytes=stat_data["bla_by"], bla_bytes_ps=stat_data["bla_bps"], whi_pckts=stat_data["whi_pk"], whi_pckts_ps=stat_data["whi_pps"], whi_bytes=stat_data["whi_by"], whi_bytes_ps=stat_data["whi_bps"], blo_pckts=stat_data["blo_pk"], blo_pckts_ps=stat_data["blo_pps"], blo_bytes=stat_data["blo_by"], blo_bytes_ps=stat_data["blo_bps"], pass_pckts=stat_data["pass_pk"], pass_pckts_ps=stat_data["pass_pps"], pass_bytes=stat_data["pass_by"], pass_bytes_ps=stat_data["pass_bps"], fwd_pckts=stat_data["fwd_pk"], fwd_pckts_ps=stat_data["pass_pps"], fwd_bytes=stat_data["pass_by"], fwd_bytes_ps=stat_data["pass_bps"], fwdo_pckts=stat_data["fwdo_pk"], fwdo_pckts_ps=stat_data["fwdo_pps"], fwdo_bytes=stat_data["fwdo_by"], fwdo_bytes_ps=stat_data["fwdo_bps"], bad_pckts=stat_data["bad_pk"], bad_pckts_ps=stat_data["bad_pps"], bad_bytes=stat_data["bad_by"], bad_bytes_ps=stat_data["bad_bps"], a2rp_pckts=stat_data["a2rp_pk"], a2rp_pckts_ps=stat_data["a2rp_pps"], a2rp_bytes=stat_data["a2rp_by"], a2rp_bytes_ps=stat_data["a2rp_bps"], a2rs_pckts=stat_data["a2rs_pk"], a2rs_pckts_ps=stat_data["a2rs_pps"], a2rs_bytes=stat_data["a2rs_by"], a2rs_bytes_ps=stat_data["a2rs_bps"], dro_pckts=stat_data["dro_pk"], dro_pckts_ps=stat_data["dro_pps"], dro_bytes=stat_data["dro_by"], dro_bytes_ps=stat_data["dro_bps"], drc_pckts=stat_data["drc_pk"], drc_pckts_ps=stat_data["drc_pps"], drc_bytes=stat_data["drc_by"], drc_bytes_ps=stat_data["drc_bps"], cpu_load=stat_data["cpu_load"])
 
     stat.save()
 
@@ -210,10 +272,9 @@ async def handler(client):
     conns.append(client)
     ip = client.remote_address[0]
     port = client.remote_address[1]
-
+    edge = None
+    
     while True:
-        edge = None
-
         if client.open is False:
             print("Connection from " + ip + ":" + str(port) + " ended.")
             conns.remove(client)
@@ -317,6 +378,8 @@ async def handler(client):
 
         except websockets.exceptions.ConnectionClosedError:
             print("Closing connection...")
+
+    await set_edge_status(edge, False)
     
 async def start_server():
     async with websockets.serve(handler, "0.0.0.0", 8003):
