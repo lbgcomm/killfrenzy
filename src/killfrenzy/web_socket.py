@@ -382,7 +382,8 @@ async def handler(client):
         except websockets.exceptions.ConnectionClosedError:
             print("Closing connection...")
 
-    await set_edge_status(edge, False)
+    if edge is not None:
+        await set_edge_status(edge, False)
     
 async def start_server():
     async with websockets.serve(handler, "0.0.0.0", 8003):
