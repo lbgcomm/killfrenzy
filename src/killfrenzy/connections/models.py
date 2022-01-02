@@ -202,6 +202,27 @@ class Connection_A2S_Response(models.Model):
     response = models.CharField(verbose_name="A2S_INFO Response", help_text="A2S_INFO response text.", max_length=2048)
     expires = models.BigIntegerField(verbose_name="Cache Expire Time", help_text="Response's expire time in nanoseconds.", null=True)
 
+    def __str__(self):
+        return self.ip + ":" + str(self.port)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        a2s = {}
+
+        a2s["ip"] = self.connection_id.bind_ip
+        a2s["port"] = self.connection_id.bind_port
+        a2s["expires"] = self.expires
+        a2s["response"] = self.self.response
+
+        import asyncio
+        import web_socket
+        asyncio.run(web_socket.prepare_and_send_data("a2s_update", a2s_resp=a2s))
+
+    class Meta:
+        verbose_name = "A2S_INFO response"
+        verbose_name_plural = "A2S_INFO responses"
+
 class Connection_Stats(models.Model):
     connection_id = ForeignKey(Connection, on_delete=models.DO_NOTHING)
     pps = models.BigIntegerField(null=True, editable=False)

@@ -125,9 +125,17 @@ def push_a2s_response(a2s_data):
 
         return
 
-    a2s = Connection_A2S_Response(connection_id=conn, expires=a2s_data["expires"], data=a2s_data["response"])
+    a2s = Connection_A2S_Response.objects.get(connection_id=conn).first()
 
-    a2s.save()
+    if a2s is not None:
+        a2s.expires = a2s_data["expires"]
+        a2s.response = a2s_data["response"]
+
+        a2s.save()
+    else:
+        a2s = Connection_A2S_Response(connection_id=conn, expires=a2s_data["expires"], data=a2s_data["response"])
+
+        a2s.save()
 
 @sync_to_async
 def update_stats(edge, stat_data):
@@ -168,9 +176,12 @@ def push_port_punch(pp_data):
 
         return
 
-    pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"])
+    check = Port_Punch.objects.get(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"]).first()
 
-    pp.save()
+    if check is None:
+        pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"])
+
+        pp.save()
 
 @sync_to_async
 def set_edge_status(edge, status):
@@ -190,7 +201,7 @@ def to_dict(instance):
 
     return data
 
-async def prepare_and_send_data(update_type="full_update", edge=None, settings=None, connections=None, whitelist=None, blacklist=None, port_punch=None):
+async def prepare_and_send_data(update_type="full_update", edge=None, settings=None, connections=None, whitelist=None, blacklist=None, port_punch=None, a2s_resp=None):
     edges = list()
 
     # If we have one edge, just insert the one.
@@ -324,6 +335,13 @@ async def prepare_and_send_data(update_type="full_update", edge=None, settings=N
 
                 for p in port_punch:
                     ret["data"]["port_punch"].append(p)
+
+        # Handle A2S_INFO response.
+        if a2s_resp is not None:
+            ret["data"]["ip"] = a2s_resp["ip"]
+            ret["data"]["port"] = a2s_resp["port"]
+            ret["data"]["expires"] = a2s_resp["expires"]
+            ret["data"]["response"] = a2s_resp["response"]
 
         #print("Sending to " + ip + ":" + str(port) + " => " + json.dumps(ret))
         await edge_conn.send(json.dumps(ret))
