@@ -361,10 +361,7 @@ async def handler(client):
                         continue
                 elif info["type"] == "push_port_punch":
                     if "data" not in info:
-                        print("data not in port push")
                         continue
-
-                    print("Got port push")
 
                     pp_data = info["data"]
 
