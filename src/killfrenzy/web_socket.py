@@ -1,4 +1,4 @@
-from connections.models import Edge, Edge_Settings, Edge_Stats, Connection, Connection_Stats, Whitelist, Blacklist, Port_Punch
+from connections.models import Edge, Edge_Settings, Edge_Stats, Connection, Connection_A2S_Response, Connection_Stats, Whitelist, Blacklist, Port_Punch
 
 import asyncio
 import threading
@@ -20,7 +20,7 @@ def get_edge_settings(edge):
 
 @sync_to_async
 def get_connections():
-    conns = list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time'))
+    conns = list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time', 'a2s_info_global_cache'))
     conns_return = []
 
     for v in conns:
@@ -58,6 +58,7 @@ def get_connections():
         new_v["cache_settings"] = {}
         new_v["cache_settings"]["a2s_info_enabled"] = new_v["a2s_info_enabled"]
         new_v["cache_settings"]["a2s_info_cache_time"] = new_v["a2s_info_cache_time"]
+        new_v["cache_settings"]["a2s_info_global_cache"] = new_v["a2s_info_global_cache"]
 
         new_v.pop("udp_rl_bl")
         new_v.pop("udp_rl_pps")
@@ -77,6 +78,7 @@ def get_connections():
 
         new_v.pop("a2s_info_enabled")
         new_v.pop("a2s_info_cache_time")
+        new_v.pop("a2s_info_global_cache")
 
         conns_return.append(new_v)
 
@@ -95,6 +97,39 @@ def get_port_punch():
     return list(Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port'))
 
 @sync_to_async
+def push_a2s_response(a2s_data):
+    if "ip" not in a2s_data:
+        print("push_a2s_response() :: IP not valid.")
+
+        return
+
+    if "port" not in a2s_data:
+        print("push_a2s_response() :: Port not valid.")
+
+        return
+
+    if "expires" not in a2s_data:
+        print("push_a2s_response() :: Expire time not valid.")
+
+        return
+
+    if "response" not in a2s_data:
+        print("push_a2s_response() :: Response not valid.")
+
+        return
+
+    conn = Connection.objects.get(bind_ip=a2s_data["ip"], port=a2s_data["port"]).first()
+
+    if conn is None:
+        print("push_a2s_response() :: Failed to get connection for " + a2s_data["ip"] + ": " + str(a2s_data["port"]) + ".")
+
+        return
+
+    a2s = Connection_A2S_Response(connection_id=conn, expires=a2s_data["expires"], data=a2s_data["response"])
+
+    a2s.save()
+
+@sync_to_async
 def update_stats(edge, stat_data):
     if "bla_pk" in stat_data:
         stat = Edge_Stats(edge_id=edge, bla_pckts=stat_data["bla_pk"], bla_pckts_ps=stat_data["bla_pps"], bla_bytes=stat_data["bla_by"], bla_bytes_ps=stat_data["bla_bps"], whi_pckts=stat_data["whi_pk"], whi_pckts_ps=stat_data["whi_pps"], whi_bytes=stat_data["whi_by"], whi_bytes_ps=stat_data["whi_bps"], blo_pckts=stat_data["blo_pk"], blo_pckts_ps=stat_data["blo_pps"], blo_bytes=stat_data["blo_by"], blo_bytes_ps=stat_data["blo_bps"], pass_pckts=stat_data["pass_pk"], pass_pckts_ps=stat_data["pass_pps"], pass_bytes=stat_data["pass_by"], pass_bytes_ps=stat_data["pass_bps"], fwd_pckts=stat_data["fwd_pk"], fwd_pckts_ps=stat_data["pass_pps"], fwd_bytes=stat_data["pass_by"], fwd_bytes_ps=stat_data["pass_bps"], fwdo_pckts=stat_data["fwdo_pk"], fwdo_pckts_ps=stat_data["fwdo_pps"], fwdo_bytes=stat_data["fwdo_by"], fwdo_bytes_ps=stat_data["fwdo_bps"], bad_pckts=stat_data["bad_pk"], bad_pckts_ps=stat_data["bad_pps"], bad_bytes=stat_data["bad_by"], bad_bytes_ps=stat_data["bad_bps"], a2rp_pckts=stat_data["a2rp_pk"], a2rp_pckts_ps=stat_data["a2rp_pps"], a2rp_bytes=stat_data["a2rp_by"], a2rp_bytes_ps=stat_data["a2rp_bps"], a2rs_pckts=stat_data["a2rs_pk"], a2rs_pckts_ps=stat_data["a2rs_pps"], a2rs_bytes=stat_data["a2rs_by"], a2rs_bytes_ps=stat_data["a2rs_bps"], dro_pckts=stat_data["dro_pk"], dro_pckts_ps=stat_data["dro_pps"], dro_bytes=stat_data["dro_by"], dro_bytes_ps=stat_data["dro_bps"], drc_pckts=stat_data["drc_pk"], drc_pckts_ps=stat_data["drc_pps"], drc_bytes=stat_data["drc_by"], drc_bytes_ps=stat_data["drc_bps"], cpu_load=stat_data["cpu_load"])
@@ -103,6 +138,36 @@ def update_stats(edge, stat_data):
 
 @sync_to_async
 def push_port_punch(pp_data):
+    if "ip" not in pp_data:
+        print("push_port_punch() :: IP not valid.")
+
+        return
+
+    if "port" not in pp_data:
+        print("push_port_punch() :: Port not valid.")
+
+        return
+
+    if "service_ip" not in pp_data:
+        print("push_port_punch() :: Service IP not valid.")
+
+        return
+
+    if "service_port" not in pp_data:
+        print("push_port_punch() :: Service Port not valid.")
+
+        return
+
+    if "expires" not in pp_data:
+        print("push_port_punch() :: Expire time not valid.")
+
+        return
+
+    if "dest_ip" not in pp_data:
+        print("push_port_punch() :: Destination IP not valid.")
+
+        return
+
     pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"])
 
     pp.save()
@@ -368,7 +433,20 @@ async def handler(client):
                     try:
                         await push_port_punch(pp_data)
                     except Exception as e:
-                        print("Invalid port punch push")
+                        print("Invalid port punch push.")
+                        print(e)
+
+                        continue
+                elif info["type"] == "push_a2s_response":
+                    if "data" not in info:
+                        continue
+
+                    a2s_data = info["data"]
+
+                    try:
+                        await push_a2s_response(a2s_data)
+                    except Exception as e:
+                        print("Invalid A2S_INFO push.")
                         print(e)
 
                         continue

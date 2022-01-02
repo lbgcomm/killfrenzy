@@ -118,34 +118,35 @@ class Connection(models.Model):
         SRCDS = (1 << 0), "SRCDS"
         RUST = (1 << 1), "Rust"
 
-    enabled = models.BooleanField(verbose_name="Enabled", help_text="Enable connection", default=True)
+    enabled = models.BooleanField(verbose_name="Enabled", help_text="Enable connection.", default=True)
     
     bind_ip = models.CharField(verbose_name="Bind IP", help_text="Usually game server IP/Anycast IP", max_length=32)
-    bind_port = models.IntegerField(verbose_name="Bind Port", help_text="Usually the game server port (e.g. 27015)")
+    bind_port = models.IntegerField(verbose_name="Bind Port", help_text="Usually the game server port (e.g. 27015).")
 
-    dest_ip = models.CharField(verbose_name="Dest IP", help_text="The game server machine IP", max_length=32)
-    dest_port = models.IntegerField(verbose_name="Dest Port", help_text="Port to translate to (0 = bind port, default)", default=0)
+    dest_ip = models.CharField(verbose_name="Dest IP", help_text="The game server machine IP.", max_length=32)
+    dest_port = models.IntegerField(verbose_name="Dest Port", help_text="Port to translate to (0 = bind port, default).", default=0)
 
-    filters = models.IntegerField(verbose_name="Filters", help_text="Filters to apply for this connection", default=Filters.NONE, choices=Filters.choices)
+    filters = models.IntegerField(verbose_name="Filters", help_text="Filters to apply for this connection.", default=Filters.NONE, choices=Filters.choices)
 
-    udp_rl_bl = models.IntegerField(verbose_name="UDP RL BL", help_text="UDP rate limit block time", default=0)
-    udp_rl_pps = models.IntegerField(verbose_name="UDP RL PPS", help_text="UDP rate limit PPS limit", default=0)
-    udp_rl_bps = models.IntegerField(verbose_name="UDP RL BPS", help_text="UDP rate limit BPS limit", default=0)
+    udp_rl_bl = models.IntegerField(verbose_name="UDP RL BL", help_text="UDP rate limit block time.", default=0)
+    udp_rl_pps = models.IntegerField(verbose_name="UDP RL PPS", help_text="UDP rate limit PPS limit.", default=0)
+    udp_rl_bps = models.IntegerField(verbose_name="UDP RL BPS", help_text="UDP rate limit BPS limit.", default=0)
 
-    tcp_rl_bl = models.IntegerField(verbose_name="TCP RL BL", help_text="TCP rate limit block time", default=0)
-    tcp_rl_pps = models.IntegerField(verbose_name="TCP RL PPS", help_text="TCP rate limit PPS limit", default=0)
-    tcp_rl_bps = models.IntegerField(verbose_name="TCP RL BPS", help_text="TCP rate limit BPS limit", default=0)
+    tcp_rl_bl = models.IntegerField(verbose_name="TCP RL BL", help_text="TCP rate limit block time.", default=0)
+    tcp_rl_pps = models.IntegerField(verbose_name="TCP RL PPS", help_text="TCP rate limit PPS limit.", default=0)
+    tcp_rl_bps = models.IntegerField(verbose_name="TCP RL BPS", help_text="TCP rate limit BPS limit.", default=0)
 
-    icmp_rl_bl = models.IntegerField(verbose_name="ICMP RL BL", help_text="ICMP rate limit block time", default=0)
-    icmp_rl_pps = models.IntegerField(verbose_name="ICMP RL PPS", help_text="ICMP rate limit PPS limit", default=0)
-    icmp_rl_bps = models.IntegerField(verbose_name="ICMP RL BPS", help_text="ICMP rate limit BPS limit", default=0)
+    icmp_rl_bl = models.IntegerField(verbose_name="ICMP RL BL", help_text="ICMP rate limit block time.", default=0)
+    icmp_rl_pps = models.IntegerField(verbose_name="ICMP RL PPS", help_text="ICMP rate limit PPS limit.", default=0)
+    icmp_rl_bps = models.IntegerField(verbose_name="ICMP RL BPS", help_text="ICMP rate limit BPS limit.", default=0)
 
-    syn_rl_bl = models.IntegerField(verbose_name="SYN RL BL", help_text="TCP SYN rate limit block time", default=0)
-    syn_rl_pps = models.IntegerField(verbose_name="SYN RL PPS", help_text="TCP SYN rate limit PPS limit", default=0)
-    syn_rl_bps = models.IntegerField(verbose_name="SYN RL BPS", help_text="TCP SYN rate limit BPS limit", default=0)
+    syn_rl_bl = models.IntegerField(verbose_name="SYN RL BL", help_text="TCP SYN rate limit block time.", default=0)
+    syn_rl_pps = models.IntegerField(verbose_name="SYN RL PPS", help_text="TCP SYN rate limit PPS limit.", default=0)
+    syn_rl_bps = models.IntegerField(verbose_name="SYN RL BPS", help_text="TCP SYN rate limit BPS limit.", default=0)
 
-    a2s_info_enabled = models.BooleanField(verbose_name="A2S_INFO Caching", help_text="Whether to enable A2S_INFO caching", default=False)
-    a2s_info_cache_time = models.IntegerField(verbose_name="A2S_INFO Cache Time", help_text="A2S_INFO cache time if enabled", default=45)
+    a2s_info_enabled = models.BooleanField(verbose_name="A2S_INFO Caching", help_text="Whether to enable A2S_INFO caching.", default=False)
+    a2s_info_cache_time = models.IntegerField(verbose_name="A2S_INFO Cache Time", help_text="A2S_INFO cache time if enabled.", default=45)
+    a2s_info_global_cache = models.BooleanField(verbose_name="A2S_INFO Global Cache", help_text="Whether to enable A2S_INFO global caching.", default=False)
 
     pps = models.BigIntegerField(null=True, editable=False)
     bps = models.BigIntegerField(null=True, editable=False)
@@ -186,6 +187,7 @@ class Connection(models.Model):
         conn["cache_settings"] = {}
         conn["cache_settings"]["a2s_info_enabled"] = self.a2s_info_enabled
         conn["cache_settings"]["a2s_info_cache_time"] = self.a2s_info_cache_time
+        conn["cache_settings"]["a2s_info_global_cache"] = self.a2s_info_global_cache
         ret.append(conn)
 
         import asyncio
@@ -194,6 +196,11 @@ class Connection(models.Model):
 
     def __str__(self):
         return self.bind_ip + ":" + str(self.bind_port)
+
+class Connection_A2S_Response(models.Model):
+    connection_id = ForeignKey(Connection, on_delete=models.DO_NOTHING)
+    response = models.CharField(verbose_name="A2S_INFO Response", help_text="A2S_INFO response text.", max_length=2048)
+    expires = models.BigIntegerField(verbose_name="Cache Expire Time", help_text="Response's expire time in nanoseconds.", null=True)
 
 class Connection_Stats(models.Model):
     connection_id = ForeignKey(Connection, on_delete=models.DO_NOTHING)
@@ -267,7 +274,7 @@ class Port_Punch(models.Model):
         pp["port"] = self.port
         pp["service_ip"] = self.service_ip
         pp["service_port"] = self.service_port
-        
+
         pp["dest_ip"] = self.dest_ip
 
         ret.append(pp)
