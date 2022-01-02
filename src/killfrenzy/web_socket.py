@@ -302,9 +302,6 @@ async def handler(client):
                     await client.close()
 
                     break
-
-                if info["type"] == "push_port_punch":
-                    print("FOUND PORT PUNCH")
                 
                 # Set to online.
                 await set_edge_status(edge, True)
@@ -362,7 +359,7 @@ async def handler(client):
                         print(e)
 
                         continue
-                elif info["type"] == "push_port_punch.":
+                elif info["type"] == "push_port_punch":
                     if "data" not in info:
                         print("data not in port push")
                         continue
