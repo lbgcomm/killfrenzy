@@ -118,7 +118,12 @@ def push_a2s_response(a2s_data):
 
         return
 
-    conn = Connection.objects.get(bind_ip=a2s_data["ip"], port=a2s_data["port"]).first()
+    conn = None
+
+    try:
+        conn = Connection.objects.get(bind_ip=a2s_data["ip"], port=a2s_data["port"]).first()
+    except Connection.DoesNotExist:
+        conn = None
 
     if conn is None:
         print("push_a2s_response() :: Failed to get connection for " + a2s_data["ip"] + ": " + str(a2s_data["port"]) + ".")
@@ -171,7 +176,12 @@ def push_port_punch(pp_data):
 
         return
 
-    check = Port_Punch.objects.get(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"]).first()
+    check = None
+
+    try:
+        check = Port_Punch.objects.get(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"]).first()
+    except Port_Punch.DoesNotExist:
+        check = None
 
     if check is None:
         pp = Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"])
