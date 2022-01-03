@@ -3,4 +3,4 @@ import web_socket
 
 urlpatterns = []
 
-web_socket.task_start()
+#web_socket.task_start()

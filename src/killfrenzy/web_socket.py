@@ -149,7 +149,7 @@ def update_stats(edge, stat_data):
 
         stat.save()
 
-@sync_to_async
+@sync_to_async(thread_sensitive=False)
 def push_port_punch(pp_data):
     if "ip" not in pp_data:
         print("push_port_punch() :: IP not valid.")
@@ -484,11 +484,3 @@ async def start_server():
     async with websockets.serve(handler, "0.0.0.0", 8003):
         print("Web socket listening on port 8003...")
         await asyncio.Future()
-
-def thread_start():
-    asyncio.run(start_server())
-
-def task_start():
-    t = threading.Thread(target=thread_start)
-    t.setDaemon(True)
-    t.start()
