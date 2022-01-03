@@ -166,11 +166,6 @@ def push_port_punch(pp_data):
 
         return
 
-    if "expires" not in pp_data:
-        print("push_port_punch() :: Expire time not valid.")
-
-        return
-
     if "dest_ip" not in pp_data:
         print("push_port_punch() :: Destination IP not valid.")
 
