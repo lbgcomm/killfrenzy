@@ -94,7 +94,7 @@ def get_blacklist():
 
 @sync_to_async
 def get_port_punch():
-    return list(Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port'))
+    return list(Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port', 'dest_ip'))
 
 @sync_to_async
 def push_a2s_response(a2s_data):
