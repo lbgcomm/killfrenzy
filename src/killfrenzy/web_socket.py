@@ -20,7 +20,7 @@ def get_edge_settings(edge):
 
 @sync_to_async
 def get_connections():
-    conns = list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time', 'a2s_info_global_cache'))
+    conns = list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time', 'a2s_info_global_cache', 'a2s_info_cache_timeout'))
     conns_return = []
 
     for v in conns:
@@ -59,6 +59,7 @@ def get_connections():
         new_v["cache_settings"]["a2s_info_enabled"] = new_v["a2s_info_enabled"]
         new_v["cache_settings"]["a2s_info_cache_time"] = new_v["a2s_info_cache_time"]
         new_v["cache_settings"]["a2s_info_global_cache"] = new_v["a2s_info_global_cache"]
+        new_v["cache_settings"]["a2s_info_cache_timeout"] = new_v["a2s_info_cache_timeout"]
 
         new_v.pop("udp_rl_bl")
         new_v.pop("udp_rl_pps")
@@ -373,7 +374,14 @@ async def handler(client):
 
         try:
             async for data in client:
-                info = json.loads(data)
+                try:
+                    info = json.loads(data)
+                except json.JSONDecodeError as e:
+                    print("handler() :: Error handling JSON load.")
+                    print("Error => " + e.msg)
+                    print("JSON Data => " + e.doc)
+
+                    continue
 
                 ret = {}
 

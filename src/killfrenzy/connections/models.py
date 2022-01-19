@@ -147,6 +147,7 @@ class Connection(models.Model):
     a2s_info_enabled = models.BooleanField(verbose_name="A2S_INFO Caching", help_text="Whether to enable A2S_INFO caching.", default=False)
     a2s_info_cache_time = models.IntegerField(verbose_name="A2S_INFO Cache Time", help_text="A2S_INFO cache time if enabled.", default=45)
     a2s_info_global_cache = models.BooleanField(verbose_name="A2S_INFO Global Cache", help_text="Whether to enable A2S_INFO global caching.", default=False)
+    a2s_info_cache_timeout = models.IntegerField(verbose_name="A2S_INFO Cache Timeout", help_text="A2S_INFO cache timeout for expired caches.", default=180)
 
     pps = models.BigIntegerField(null=True, editable=False)
     bps = models.BigIntegerField(null=True, editable=False)
@@ -188,6 +189,7 @@ class Connection(models.Model):
         conn["cache_settings"]["a2s_info_enabled"] = self.a2s_info_enabled
         conn["cache_settings"]["a2s_info_cache_time"] = self.a2s_info_cache_time
         conn["cache_settings"]["a2s_info_global_cache"] = self.a2s_info_global_cache
+        conn["cache_settings"]["a2s_info_cache_timeout"] = self.a2s_info_cache_time
         ret.append(conn)
 
         import asyncio
