@@ -194,7 +194,7 @@ class Connection(models.Model):
 
         import asyncio
         import web_socket
-        asyncio.run(web_socket.prepare_and_send_data("conn_update", connections=ret))
+        asyncio.run(web_socket.prepare_and_send_data("connection_update", connections=ret))
 
     def __str__(self):
         return self.bind_ip + ":" + str(self.bind_port)
