@@ -164,6 +164,7 @@ class Connection(models.Model):
         ret = []
         conn = {}
         conn["enabled"] = self.enabled
+        conn["protocol"] = self.protocol
         conn["bind_ip"] = self.bind_ip
         conn["bind_port"] = self.bind_port
         conn["dest_ip"] = self.dest_ip
