@@ -20,10 +20,10 @@ def get_edge_settings(edge):
 
 @sync_to_async
 def get_connections():
-    conns = list(Connection.objects.all().values('enabled', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time', 'a2s_info_global_cache', 'a2s_info_cache_timeout'))
+    connections = list(Connection.objects.all().values('enabled', 'protocol', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time', 'a2s_info_global_cache', 'a2s_info_cache_timeout'))
     conns_return = []
 
-    for v in conns:
+    for v in connections:
         if v is None:
             continue
 
@@ -220,6 +220,8 @@ async def prepare_and_send_data(update_type="full_update", edge=None, settings=N
 
     i = 0
 
+    print("Found " + str(len(edges)) + " edges to send to.")
+
     # Loop through all edges.
     for edge_conn in edges:
         if edge_conn is None:
@@ -349,7 +351,7 @@ async def prepare_and_send_data(update_type="full_update", edge=None, settings=N
             ret["data"]["expires"] = a2s_resp["expires"]
             ret["data"]["response"] = a2s_resp["response"]
 
-        #print("Sending to " + ip + ":" + str(port) + " => " + json.dumps(ret))
+        print("Sending to " + ip + ":" + str(port) + " => " + json.dumps(ret))
         await edge_conn.send(json.dumps(ret))
         
         i = i + 1

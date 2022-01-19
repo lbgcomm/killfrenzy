@@ -118,8 +118,14 @@ class Connection(models.Model):
         SRCDS = (1 << 0), "SRCDS"
         RUST = (1 << 1), "Rust"
 
+    class Protocols(models.TextChoices):
+        UDP = "udp", "UDP"
+        TCP = "tcp", "TCP"
+        ICMP = "icmp", "ICMP"
+
     enabled = models.BooleanField(verbose_name="Enabled", help_text="Enable connection.", default=True)
     
+    protocol = models.CharField(verbose_name="Protocol", help_text="The protocol for this connection.", max_length=12, default=Protocols.UDP, choices=Protocols.choices)
     bind_ip = models.CharField(verbose_name="Bind IP", help_text="Usually game server IP/Anycast IP", max_length=32)
     bind_port = models.IntegerField(verbose_name="Bind Port", help_text="Usually the game server port (e.g. 27015).")
 
