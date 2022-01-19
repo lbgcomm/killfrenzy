@@ -1,7 +1,6 @@
 from connections.models import Edge, Edge_Settings, Edge_Stats, Connection, Connection_A2S_Response, Connection_Stats, Whitelist, Blacklist, Port_Punch
 
 import asyncio
-import threading
 from asgiref.sync import sync_to_async
 from itertools import chain
 

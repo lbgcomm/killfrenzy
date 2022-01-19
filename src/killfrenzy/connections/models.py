@@ -225,7 +225,7 @@ class Connection_A2S_Response(models.Model):
         a2s["response"] = self.self.response
 
         import asyncio
-        import web_socket
+        import killfrenzy.web_socket.web_socket as web_socket
         asyncio.run(web_socket.prepare_and_send_data("a2s_update", a2s_resp=a2s))
 
     class Meta:
@@ -252,7 +252,7 @@ class Whitelist(models.Model):
         ret.append(self.prefix)
 
         import asyncio
-        import web_socket
+        import killfrenzy.web_socket.web_socket as web_socket
         asyncio.run(web_socket.prepare_and_send_data("whitelist_update", whitelist=ret))
 
     def __str__(self):
@@ -275,7 +275,7 @@ class Blacklist(models.Model):
         print("From save " + str(ret))
 
         import asyncio
-        import web_socket
+        import killfrenzy.web_socket.web_socket as web_socket
         asyncio.run(web_socket.prepare_and_send_data("blacklist_update", blacklist=ret))
 
     def __str__(self):
@@ -310,7 +310,7 @@ class Port_Punch(models.Model):
         ret.append(pp)
 
         import asyncio
-        import web_socket
+        import killfrenzy.web_socket.web_socket as web_socket
         asyncio.run(web_socket.prepare_and_send_data("port_punch_update", port_punch=ret))
 
     class Meta:

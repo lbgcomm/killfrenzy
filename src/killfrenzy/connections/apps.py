@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from multiprocessing import Process
 from threading import Thread
 from django import db
 import asyncio
