@@ -368,7 +368,7 @@ class Port_Punch(models.Model):
         asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_update", port_punch=ret))
 
     def delete(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
         ret = []
         pp = {}
