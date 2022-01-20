@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.fields.related import ForeignKey
+from django.db.models import signals
 
 import asyncio
 
@@ -231,18 +232,6 @@ class Connection(models.Model):
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        ret = []
-        conn = {}
-
-        conn["protocol"] = self.protocol
-        conn["bind_ip"] = self.bind_ip
-        conn["bind_port"] = self.bind_port
-        conn["dest_ip"] = self.dest_ip
-
-        ret.append(conn)
-
-        asyncio.run(web_socket.socket_c.prepare_and_send_data("connection_delete", connections=ret))
-
     def __str__(self):
         return self.bind_ip + ":" + str(self.bind_port)
 
@@ -294,15 +283,6 @@ class Whitelist(models.Model):
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
-        ret = []
-        whitelist = {}
-
-        whitelist["prefix"] = self.prefix
-
-        ret.append(whitelist)
-
-        asyncio.run(web_socket.socket_c.prepare_and_send_data("whitelist_delete", whitelist=ret))
-
     def __str__(self):
         return self.prefix
 
@@ -324,15 +304,6 @@ class Blacklist(models.Model):
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
-
-        ret = []
-        blacklist = {}
-
-        blacklist["prefix"] = self.prefix
-
-        ret.append(blacklist)
-
-        asyncio.run(web_socket.socket_c.prepare_and_send_data("blacklist_delete", blacklist=ret))
 
     def __str__(self):
         return self.prefix
@@ -370,18 +341,57 @@ class Port_Punch(models.Model):
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
 
+    class Meta:
+        verbose_name = "port punch"
+        verbose_name_plural = "port punches"
+
+def delete_item(sender, instance, **kwargs):
+    if sender == Connection:
+        ret = []
+        conn = {}
+
+        conn["protocol"] = instance.protocol
+        conn["bind_ip"] = instance.bind_ip
+        conn["bind_port"] = instance.bind_port
+        conn["dest_ip"] = instance.dest_ip
+
+        ret.append(conn)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("connection_delete", connections=ret))
+
+    elif sender == Whitelist:
+        ret = []
+        whitelist = {}
+
+        whitelist["prefix"] = instance.prefix
+
+        ret.append(whitelist)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("whitelist_delete", whitelist=ret))
+    elif sender == Blacklist:
+        ret = []
+        blacklist = {}
+
+        blacklist["prefix"] = instance.prefix
+
+        ret.append(blacklist)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("blacklist_delete", blacklist=ret))
+    elif sender == Port_Punch:
         ret = []
         pp = {}
 
-        pp["ip"] = self.ip
-        pp["port"] = self.port
-        pp["service_ip"] = self.service_ip
-        pp["service_port"] = self.service_port
+        pp["ip"] = instance.ip
+        pp["port"] = instance.port
+        pp["service_ip"] = instance.service_ip
+        pp["service_port"] = instance.service_port
 
         ret.append(pp)
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_delete", port_punch=ret))
 
-    class Meta:
-        verbose_name = "port punch"
-        verbose_name_plural = "port punches"
+
+signals.post_delete.connect(receiver=delete_item, sender=Connection)
+signals.post_delete.connect(receiver=delete_item, sender=Whitelist)
+signals.post_delete.connect(receiver=delete_item, sender=Blacklist)
+signals.post_delete.connect(receiver=delete_item, sender=Port_Punch)
