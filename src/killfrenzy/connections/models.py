@@ -1,6 +1,9 @@
 from django.db import models
 from django.db.models.fields.related import ForeignKey
 
+import asyncio
+
+global web_socket
 import web_socket
 
 # Edge module.
@@ -201,7 +204,8 @@ class Connection(models.Model):
         conn["cache_settings"]["a2s_info_cache_timeout"] = self.a2s_info_cache_time
         ret.append(conn)
 
-        import asyncio
+        if web_socket.socket_c.thread_id() is not None:
+            print("THREAD ID => " + str(web_socket.socket_c.thread_id()))
 
         print("Started => " + str(web_socket.socket_c.started))
 
@@ -210,7 +214,7 @@ class Connection(models.Model):
 
             return
 
-        web_socket.socket_c.loop.run_until_complete(web_socket.socket_c.prepare_and_send_data("connection_update", connections=ret))
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("connection_update", connections=ret))
 
     def __str__(self):
         return self.bind_ip + ":" + str(self.bind_port)

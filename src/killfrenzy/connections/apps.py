@@ -1,8 +1,6 @@
 from django.apps import AppConfig
-from threading import Thread
-from django import db
-import asyncio
 import os
+
 import web_socket
 
 class ConnectionsConfig(AppConfig):
@@ -12,7 +10,8 @@ class ConnectionsConfig(AppConfig):
     def ready(self):
         env = os.environ.get("WEBSERVER_SET")
 
-        if env is None:
+        if env is not None:
+            print("RUNNING FROM READY")
             web_socket.socket_c.start()
-
+        else:
             os.environ["WEBSERVER_SET"] = 'True'

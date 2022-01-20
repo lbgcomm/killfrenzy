@@ -4,41 +4,45 @@ from itertools import chain
 
 from threading import Thread
 
-
 import websockets
 import json
 
-import connections.models as mdls
+import os
+
+#import connections.models as mdls
 
 #from connections.models import Edge, Edge_Settings, Edge_Stats, Connection, Connection_A2S_Response, Connection_Stats, Whitelist, Blacklist, Port_Punch
 
-class Web_Socket():
+class Web_Socket(Thread):
     def __init__(self):
-        self.thread = None
+        print("Web socket (class) initiated PID " + str(os.getpid()) + ".")
+        super().__init__()
+        self.daemon = True
+
         self.conns = []
         self.started = False
-        self.loop = None
+        self.loop = None        
 
-    def start(self):
-        self.thread = Thread(target=self.thread_start)
-        self.thread.daemon = True
-        self.thread.start()
+    def thread_id(self):
+        return self.native_id
 
+    def run(self):
         self.started = True
-
-    def thread_start(self):
         asyncio.run(self.start_server())
 
     @sync_to_async
     def get_edge(self, ip):
+        import connections.models as mdls
         return mdls.Edge.objects.filter(ip=ip).first()
 
     @sync_to_async
     def get_edge_settings(self, edge):
+        import connections.models as mdls
         return mdls.Edge_Settings.objects.filter(edge_id=edge.id).first()
 
     @sync_to_async
     def get_connections(self):
+        import connections.models as mdls
         connections = list(mdls.Connection.objects.all().values('enabled', 'protocol', 'bind_ip', 'bind_port', 'dest_ip', 'dest_port', 'udp_rl_bl', 'udp_rl_pps', 'udp_rl_bps', 'tcp_rl_bl', 'tcp_rl_pps', 'tcp_rl_bps', 'icmp_rl_bl', 'icmp_rl_pps', 'icmp_rl_bps', 'syn_rl_bl', 'syn_rl_pps', 'syn_rl_bps', 'a2s_info_enabled', 'a2s_info_cache_time', 'a2s_info_global_cache', 'a2s_info_cache_timeout'))
         conns_return = []
 
@@ -106,18 +110,23 @@ class Web_Socket():
 
     @sync_to_async
     def get_whitelist(self):
+        import connections.models as mdls
         return list(mdls.Whitelist.objects.all().values_list('prefix', flat=True))
 
     @sync_to_async
     def get_blacklist(self):
+        import connections.models as mdls
         return list(mdls.Blacklist.objects.all().values_list('prefix', flat=True))
 
     @sync_to_async
     def get_port_punch(self):
+        import connections.models as mdls
         return list(mdls.Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port', 'dest_ip'))
 
     @sync_to_async
     def push_a2s_response(self, a2s_data):
+        import connections.models as mdls
+
         if "ip" not in a2s_data:
             print("push_a2s_response() :: IP not valid.")
 
@@ -164,6 +173,8 @@ class Web_Socket():
 
     @sync_to_async
     def update_stats(self, edge, stat_data):
+        import connections.models as mdls
+
         if "bla_pk" in stat_data:
             stat = mdls.Edge_Stats(edge_id=edge, bla_pckts=stat_data["bla_pk"], bla_pckts_ps=stat_data["bla_pps"], bla_bytes=stat_data["bla_by"], bla_bytes_ps=stat_data["bla_bps"], whi_pckts=stat_data["whi_pk"], whi_pckts_ps=stat_data["whi_pps"], whi_bytes=stat_data["whi_by"], whi_bytes_ps=stat_data["whi_bps"], blo_pckts=stat_data["blo_pk"], blo_pckts_ps=stat_data["blo_pps"], blo_bytes=stat_data["blo_by"], blo_bytes_ps=stat_data["blo_bps"], pass_pckts=stat_data["pass_pk"], pass_pckts_ps=stat_data["pass_pps"], pass_bytes=stat_data["pass_by"], pass_bytes_ps=stat_data["pass_bps"], fwd_pckts=stat_data["fwd_pk"], fwd_pckts_ps=stat_data["pass_pps"], fwd_bytes=stat_data["pass_by"], fwd_bytes_ps=stat_data["pass_bps"], fwdo_pckts=stat_data["fwdo_pk"], fwdo_pckts_ps=stat_data["fwdo_pps"], fwdo_bytes=stat_data["fwdo_by"], fwdo_bytes_ps=stat_data["fwdo_bps"], bad_pckts=stat_data["bad_pk"], bad_pckts_ps=stat_data["bad_pps"], bad_bytes=stat_data["bad_by"], bad_bytes_ps=stat_data["bad_bps"], a2rp_pckts=stat_data["a2rp_pk"], a2rp_pckts_ps=stat_data["a2rp_pps"], a2rp_bytes=stat_data["a2rp_by"], a2rp_bytes_ps=stat_data["a2rp_bps"], a2rs_pckts=stat_data["a2rs_pk"], a2rs_pckts_ps=stat_data["a2rs_pps"], a2rs_bytes=stat_data["a2rs_by"], a2rs_bytes_ps=stat_data["a2rs_bps"], dro_pckts=stat_data["dro_pk"], dro_pckts_ps=stat_data["dro_pps"], dro_bytes=stat_data["dro_by"], dro_bytes_ps=stat_data["dro_bps"], drc_pckts=stat_data["drc_pk"], drc_pckts_ps=stat_data["drc_pps"], drc_bytes=stat_data["drc_by"], drc_bytes_ps=stat_data["drc_bps"], cpu_load=stat_data["cpu_load"])
 
@@ -171,6 +182,8 @@ class Web_Socket():
 
     @sync_to_async(thread_sensitive=False)
     def push_port_punch(self, pp_data):
+        import connections.models as mdls
+
         if "ip" not in pp_data:
             print("push_port_punch() :: IP not valid.")
 
