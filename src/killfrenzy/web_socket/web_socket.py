@@ -276,8 +276,6 @@ class Web_Socket(Thread):
             ip = edge_conn.remote_address[0]
             port = edge_conn.remote_address[1]
 
-            #print("Sending data with type " + update_type + " to " + ip + ":" + str(port) + "...")
-
             # Make sure the edge exists in our database.
             edge_obj = await self.get_edge(ip)
 
@@ -296,7 +294,7 @@ class Web_Socket(Thread):
             # Initialize data.
             ret["data"] = {}
 
-            if settings is not None and len(settings) < 1:
+            if settings is not None and "delete" not in update_type and len(settings) < 1:
                 settings = await self.get_edge_settings(edge_obj)
 
             if settings is not None:
@@ -337,14 +335,14 @@ class Web_Socket(Thread):
                 if "verbose" in settings:
                     ret["data"]["verbose"] = settings["verbose"]
 
-                if "calc_data" in settings:    
-                    ret["data"]["calc_data"] = settings["calc_data"]
+                if "calc_stats" in settings:    
+                    ret["data"]["calc_stats"] = settings["calc_stats"]
 
                 if "allow_all_edge" in settings:
                     ret["data"]["allow_all_edge"] = settings["allow_all_edge"]
                 
             # Handle new connections.
-            if connections is not None and len(connections) < 1:
+            if connections is not None and "delete" not in update_type and len(connections) < 1:
                 connections = await self.get_connections()
             
             if connections is not None:
@@ -355,7 +353,7 @@ class Web_Socket(Thread):
                         ret["data"]["connections"].append(c)
 
             # Handle whitelist.
-            if whitelist is not None and len(whitelist) < 1:
+            if whitelist is not None and "delete" not in update_type and len(whitelist) < 1:
                 whitelist = await self.get_whitelist()
             
             if whitelist is not None:
@@ -366,7 +364,7 @@ class Web_Socket(Thread):
                         ret["data"]["whitelist"].append(w[:])
 
             # Handle blacklist.
-            if blacklist is not None and len(blacklist) < 1:
+            if blacklist is not None and "delete" not in update_type and len(blacklist) < 1:
                 blacklist = await self.get_blacklist()
             
             if blacklist is not None:
@@ -377,7 +375,7 @@ class Web_Socket(Thread):
                         ret["data"]["blacklist"].append(b)
 
             # Handle port punch.
-            if port_punch is not None and len(port_punch) < 1:
+            if port_punch is not None and "delete" not in update_type and len(port_punch) < 1:
                 port_punch = await self.get_port_punch()
             
             if port_punch is not None:

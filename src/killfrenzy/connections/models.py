@@ -228,6 +228,21 @@ class Connection(models.Model):
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("connection_update", connections=ret))
 
+    def delete(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+        conn = {}
+
+        conn["protocol"] = self.protocol
+        conn["bind_ip"] = self.bind_ip
+        conn["bind_port"] = self.bind_port
+        conn["dest_ip"] = self.dest_ip
+
+        ret.append(conn)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("connection_delete", connections=ret))
+
     def __str__(self):
         return self.bind_ip + ":" + str(self.bind_port)
 
@@ -276,6 +291,18 @@ class Whitelist(models.Model):
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("whitelist_update", whitelist=ret))
 
+    def delete(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+        whitelist = {}
+
+        whitelist["prefix"] = self.prefix
+
+        ret.append(whitelist)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("whitelist_delete", whitelist=ret))
+
     def __str__(self):
         return self.prefix
 
@@ -294,6 +321,18 @@ class Blacklist(models.Model):
         ret.append(self.prefix)
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("blacklist_update", blacklist=ret))
+
+    def delete(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+        blacklist = {}
+
+        blacklist["prefix"] = self.prefix
+
+        ret.append(blacklist)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("blacklist_delete", blacklist=ret))
 
     def __str__(self):
         return self.prefix
@@ -327,6 +366,21 @@ class Port_Punch(models.Model):
         ret.append(pp)
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_update", port_punch=ret))
+
+    def delete(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+        pp = {}
+
+        pp["ip"] = self.ip
+        pp["port"] = self.port
+        pp["service_ip"] = self.service_ip
+        pp["service_port"] = self.service_port
+
+        ret.append(pp)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_delete", port_punch=ret))
 
     class Meta:
         verbose_name = "port punch"
