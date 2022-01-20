@@ -11,7 +11,6 @@ class ConnectionsConfig(AppConfig):
         env = os.environ.get("WEBSERVER_SET")
 
         if env is not None:
-            print("RUNNING FROM READY")
             web_socket.socket_c.start()
         else:
             os.environ["WEBSERVER_SET"] = 'True'

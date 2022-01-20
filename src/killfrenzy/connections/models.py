@@ -113,6 +113,28 @@ class Edge_Settings(models.Model):
     class Meta:
         verbose_name = "edge setting"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = {}
+
+        ret["interface"] = self.interface
+        ret["edge_ip"] = self.edge_ip
+        ret["force_mode"] = self.force_mode
+        ret["socket_count"] = self.socket_count
+        ret["queue_is_static"] = self.queue_is_static
+        ret["queue_id"] = self.queue_id
+        ret["zero_copy"] = self.zero_copy
+        ret["need_wakeup"] = self.need_wakeup
+        ret["batch_size"] = self.batch_size
+        ret["verbose"] = self.verbose
+        ret["calc_stats"] = self.calc_stats
+        ret["allow_all_edge"] = self.allow_all_edge
+
+        edge = web_socket.socket_c.get_conn(self.edge_id.ip)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("edge_update", edge=edge, settings=ret))
+
     def __str__(self):
         return self.edge_id.ip +  " Settings"
 
@@ -201,18 +223,8 @@ class Connection(models.Model):
         conn["cache_settings"]["a2s_info_enabled"] = self.a2s_info_enabled
         conn["cache_settings"]["a2s_info_cache_time"] = self.a2s_info_cache_time
         conn["cache_settings"]["a2s_info_global_cache"] = self.a2s_info_global_cache
-        conn["cache_settings"]["a2s_info_cache_timeout"] = self.a2s_info_cache_time
+        conn["cache_settings"]["a2s_info_cache_timeout"] = self.a2s_info_cache_timeout
         ret.append(conn)
-
-        if web_socket.socket_c.thread_id() is not None:
-            print("THREAD ID => " + str(web_socket.socket_c.thread_id()))
-
-        print("Started => " + str(web_socket.socket_c.started))
-
-        if web_socket.socket_c.loop is None:
-            print("Loop is None.")
-
-            return
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("connection_update", connections=ret))
 
@@ -236,8 +248,6 @@ class Connection_A2S_Response(models.Model):
         a2s["port"] = self.connection_id.bind_port
         a2s["expires"] = self.expires
         a2s["response"] = self.self.response
-
-        import asyncio
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("a2s_update", a2s_resp=a2s))
 
@@ -264,8 +274,6 @@ class Whitelist(models.Model):
 
         ret.append(self.prefix)
 
-        import asyncio
-
         asyncio.run(web_socket.socket_c.prepare_and_send_data("whitelist_update", whitelist=ret))
 
     def __str__(self):
@@ -284,8 +292,6 @@ class Blacklist(models.Model):
         ret = []
 
         ret.append(self.prefix)
-
-        import asyncio
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("blacklist_update", blacklist=ret))
 
@@ -319,8 +325,6 @@ class Port_Punch(models.Model):
         pp["dest_ip"] = self.dest_ip
 
         ret.append(pp)
-
-        import asyncio
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_update", port_punch=ret))
 

@@ -15,11 +15,10 @@ import os
 
 class Web_Socket(Thread):
     def __init__(self):
-        print("Web socket (class) initiated PID " + str(os.getpid()) + ".")
         super().__init__()
         self.daemon = True
 
-        self.conns = []
+        self.conns = {}
         self.started = False
         self.loop = None        
 
@@ -30,6 +29,8 @@ class Web_Socket(Thread):
         self.started = True
         asyncio.run(self.start_server())
 
+        print("Starting web socket thread on PID #" + str(os.getpid()) + ".")
+
     @sync_to_async
     def get_edge(self, ip):
         import connections.models as mdls
@@ -39,6 +40,16 @@ class Web_Socket(Thread):
     def get_edge_settings(self, edge):
         import connections.models as mdls
         return mdls.Edge_Settings.objects.filter(edge_id=edge.id).first()
+
+    def get_conn(self, ip):
+        if self.conns is None:
+            return None
+
+        for k, v in self.conns.items():
+            if k == ip:
+                return v
+
+        return None
 
     @sync_to_async
     def get_connections(self):
@@ -247,8 +258,8 @@ class Web_Socket(Thread):
             edges.append(edge)
         else:
             # Loop through all open connections and add to list.
-            for i in self.conns:
-                edges.append(i)
+            for k, v in self.conns.items():
+                edges.append(v)
 
         i = 0
 
@@ -384,20 +395,23 @@ class Web_Socket(Thread):
                 ret["data"]["response"] = a2s_resp["response"]
 
             print("Sending to " + ip + ":" + str(port) + " => " + json.dumps(ret))
-            await edge_conn.send(json.dumps(ret))
+            if edge_conn.open is True:
+                await edge_conn.send(json.dumps(ret))
             
             i = i + 1
 
     async def handler(self, client):
-        self.conns.append(client)
         ip = client.remote_address[0]
         port = client.remote_address[1]
+
+        self.conns[ip] = client
+
         edge = None
 
         while True:
             if client.open is False:
                 print("Connection from " + ip + ":" + str(port) + " ended.")
-                self.conns.remove(client)
+                self.conns.pop(ip, None)
 
                 if edge is not None:
                     await self.set_edge_status(edge, False)
