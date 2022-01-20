@@ -229,7 +229,7 @@ class Connection(models.Model):
         asyncio.run(web_socket.socket_c.prepare_and_send_data("connection_update", connections=ret))
 
     def delete(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
         ret = []
         conn = {}
@@ -292,7 +292,7 @@ class Whitelist(models.Model):
         asyncio.run(web_socket.socket_c.prepare_and_send_data("whitelist_update", whitelist=ret))
 
     def delete(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
         ret = []
         whitelist = {}
@@ -323,7 +323,7 @@ class Blacklist(models.Model):
         asyncio.run(web_socket.socket_c.prepare_and_send_data("blacklist_update", blacklist=ret))
 
     def delete(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
         ret = []
         blacklist = {}
