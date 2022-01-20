@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models.fields.related import ForeignKey
 
+import web_socket
+
 # Edge module.
 class Edge(models.Model):
     name = models.CharField(verbose_name="name", help_text="Display name of edge.", max_length=32, blank=True)
@@ -200,8 +202,15 @@ class Connection(models.Model):
         ret.append(conn)
 
         import asyncio
-        import web_socket
-        asyncio.run(web_socket.prepare_and_send_data("connection_update", connections=ret))
+
+        print("Started => " + str(web_socket.socket_c.started))
+
+        if web_socket.socket_c.loop is None:
+            print("Loop is None.")
+
+            return
+
+        web_socket.socket_c.loop.run_until_complete(web_socket.socket_c.prepare_and_send_data("connection_update", connections=ret))
 
     def __str__(self):
         return self.bind_ip + ":" + str(self.bind_port)
@@ -225,8 +234,8 @@ class Connection_A2S_Response(models.Model):
         a2s["response"] = self.self.response
 
         import asyncio
-        import killfrenzy.web_socket.web_socket as web_socket
-        asyncio.run(web_socket.prepare_and_send_data("a2s_update", a2s_resp=a2s))
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("a2s_update", a2s_resp=a2s))
 
     class Meta:
         verbose_name = "A2S_INFO response"
@@ -252,8 +261,8 @@ class Whitelist(models.Model):
         ret.append(self.prefix)
 
         import asyncio
-        import killfrenzy.web_socket.web_socket as web_socket
-        asyncio.run(web_socket.prepare_and_send_data("whitelist_update", whitelist=ret))
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("whitelist_update", whitelist=ret))
 
     def __str__(self):
         return self.prefix
@@ -272,11 +281,9 @@ class Blacklist(models.Model):
 
         ret.append(self.prefix)
 
-        print("From save " + str(ret))
-
         import asyncio
-        import killfrenzy.web_socket.web_socket as web_socket
-        asyncio.run(web_socket.prepare_and_send_data("blacklist_update", blacklist=ret))
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("blacklist_update", blacklist=ret))
 
     def __str__(self):
         return self.prefix
@@ -310,8 +317,8 @@ class Port_Punch(models.Model):
         ret.append(pp)
 
         import asyncio
-        import killfrenzy.web_socket.web_socket as web_socket
-        asyncio.run(web_socket.prepare_and_send_data("port_punch_update", port_punch=ret))
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_update", port_punch=ret))
 
     class Meta:
         verbose_name = "port punch"

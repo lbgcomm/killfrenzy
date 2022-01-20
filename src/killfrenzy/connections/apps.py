@@ -3,18 +3,7 @@ from threading import Thread
 from django import db
 import asyncio
 import os
-
-class WebServer(Thread):
-    def __init__(self):
-        super().__init__()
-        self.daemon = True
-
-    def run(self):
-        db.connections.close_all()
-
-        import web_socket
-
-        asyncio.run(web_socket.start_server())
+import web_socket
 
 class ConnectionsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
@@ -24,7 +13,6 @@ class ConnectionsConfig(AppConfig):
         env = os.environ.get("WEBSERVER_SET")
 
         if env is None:
-            web = WebServer()
-            web.start()
+            web_socket.socket_c.start()
 
             os.environ["WEBSERVER_SET"] = 'True'
