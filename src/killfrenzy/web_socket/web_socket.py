@@ -361,7 +361,7 @@ class Web_Socket(Thread):
                     ret["data"]["whitelist"] = []
 
                     for w in whitelist:
-                        ret["data"]["whitelist"].append(w[:])
+                        ret["data"]["whitelist"].append(w)
 
             # Handle blacklist.
             if blacklist is not None and "delete" not in update_type and len(blacklist) < 1:
