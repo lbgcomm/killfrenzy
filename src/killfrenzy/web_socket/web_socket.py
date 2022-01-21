@@ -238,6 +238,12 @@ class Web_Socket(Thread):
 
         edge.save()
 
+    @sync_to_async
+    def set_edge_xdp_status(self, edge, status):
+        edge.xdp_status = status
+
+        edge.save()
+
     def to_dict(self, instance):
         opts = instance._meta
         data = {}
@@ -501,6 +507,15 @@ class Web_Socket(Thread):
                             print(e)
 
                             continue
+                    elif info["type"] == "push_xdp_status":
+                        if "data" not in info:
+                            continue
+
+                        xdp_data = info["data"]
+                        
+                        if edge is not None:
+                            await self.set_edge_xdp_status(edge, xdp_data["status"])
+
                     elif info["type"] == "push_port_punch":
                         if "data" not in info:
                             continue

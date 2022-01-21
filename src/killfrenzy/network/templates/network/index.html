@@ -20,6 +20,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Status</th>
+                            <th>XDP Status</th>
                             <th>PPS</th>
                             <th>MBPS</th>
                             <th>CPU Load</th>
@@ -28,15 +29,14 @@
                     
                     <tbody>
                         {% for edge in edges %}
-                            {% if edge.bgp == True %}
-                                <tr class="{% if cpu_load|get_key:edge.id > 80 %}table-danger{% elif cpu_load|get_key:edge.id > 60 %}table-warning-custom{% endif %}">
-                                    <td><a href="{% url 'network:edge' edge.id %}">{{ edge.name }}</a></td>
-                                    <td>{% if edge.status == True %}<span class="edge-online">Online</span>{% else %}<span class="edge-offline">Offline</span>{% endif %}</td>
-                                    <td>{% if edge.status == True %}{{ pps|get_key:edge.id }}{% else %}N/A{% endif %}</td>
-                                    <td>{% if edge.status == True %}{{ mbps|get_key:edge.id }}{% else %}N/A{% endif %}</td>
-                                    <td>{% if edge.status == True %}{{ cpu_load|get_key:edge.id}}%{% else %}N/A{% endif %}</td>
-                                </tr>
-                            {% endif %}
+                            <tr class="{% if cpu_load|get_key:edge.id > 80 %}table-danger{% elif cpu_load|get_key:edge.id > 60 %}table-warning-custom{% endif %}">
+                                <td><a href="{% url 'network:edge' edge.id %}">{{ edge.name }}</a></td>
+                                <td>{% if edge.status == True %}<span class="edge-online">Online</span>{% else %}<span class="edge-offline">Offline</span>{% endif %}</td>
+                                <td>{% if edge.status == True %}{% if xdp_status|get_key:edge.id == True %}<span class="edge-online">Online</span>{% else %}<span class="edge-offline">Offline</span>{% endif %}{% else %}<span class="edge-offline">Offline</span>{% endif %}</td>
+                                <td>{% if edge.status == True %}{{ pps|get_key:edge.id }}{% else %}N/A{% endif %}</td>
+                                <td>{% if edge.status == True %}{{ mbps|get_key:edge.id }}{% else %}N/A{% endif %}</td>
+                                <td>{% if edge.status == True %}{{ cpu_load|get_key:edge.id}}%{% else %}N/A{% endif %}</td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

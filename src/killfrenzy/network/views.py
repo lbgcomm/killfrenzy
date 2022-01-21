@@ -7,6 +7,7 @@ def index(request):
     pps = {}
     mbps = {}
     cpu_load = {}
+    xdp_status = {}
 
     for edge in edges:
         stats = Edge_Stats.objects.filter(edge_id=edge).latest('id')
@@ -23,8 +24,9 @@ def index(request):
         pps[edge.id] = tot_pps
         mbps[edge.id] = tot_mbps
         cpu_load[edge.id] = stats.cpu_load
+        xdp_status[edge.id] = edge.xdp_status
 
-    ctx = {"edges": edges, "pps": pps, "mbps": mbps, "cpu_load": cpu_load}
+    ctx = {"edges": edges, "pps": pps, "mbps": mbps, "cpu_load": cpu_load, "xdp_status": xdp_status}
 
     return render(request, 'network/index.html', ctx)
 
