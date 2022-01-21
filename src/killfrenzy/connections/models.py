@@ -12,9 +12,8 @@ class Edge(models.Model):
     name = models.CharField(verbose_name="name", help_text="Display name of edge.", max_length=32, blank=True)
     ip = models.CharField(verbose_name="IP", help_text="The edge server IP.", max_length=32)
 
-    bgp = models.BooleanField(verbose_name="Enable BGP (AKA Announce)", help_text="Whether to enable BGP.", default=True)
-
     status = models.BooleanField(verbose_name="Status", editable=False, default=False)
+    xdp_status = models.BooleanField(verbose_name="XDP Status", editable=False, default=False)
 
     def __str__(self):
         return self.ip
@@ -110,6 +109,8 @@ class Edge_Settings(models.Model):
     verbose = models.BooleanField(verbose_name="Verbose", help_text="Whether to enable verbose mode on the edge server.", default=False)
     calc_stats = models.BooleanField(verbose_name="Calculate Stats", help_text="Whether to calculate stats to /etc/kilimanjaro.", default=True)
     allow_all_edge = models.BooleanField(verbose_name="Allow All Edge Traffic", help_text="Whether to enable all traffic sent directly to the edge depending on the edge IP.", default=True)
+
+    bgp = models.BooleanField(verbose_name="Enable BGP (AKA Announce)", help_text="Whether to enable BGP.", default=True)
 
     class Meta:
         verbose_name = "edge setting"
