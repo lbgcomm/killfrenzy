@@ -30,7 +30,7 @@ DEBUG = False
 if os.environ.get('DEBUG'):
     DEBUG = True
 
-ALLOWED_HOSTS = ['10.50.0.4', '10.50.0.10', '51.81.86.146']
+ALLOWED_HOSTS = ['10.50.0.4', '10.50.0.10', '51.81.86.146', 'killfrenzy.lbgaming.co']
 
 # Application definition
 
@@ -74,7 +74,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'killfrenzy.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
