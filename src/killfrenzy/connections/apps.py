@@ -10,6 +10,7 @@ class ConnectionsConfig(AppConfig):
     name = 'connections'
 
     def ready(self):
+        print("READY")
         if settings.DEBUG:
             env = os.environ.get("WEBSERVER_SET")
 
