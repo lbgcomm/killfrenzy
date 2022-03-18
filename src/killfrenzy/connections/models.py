@@ -16,7 +16,7 @@ class Edge(models.Model):
     xdp_status = models.BooleanField(verbose_name="XDP Status", editable=False, default=False)
 
     def __str__(self):
-        return self.ip
+        return self.name + " (" + self.ip + ")"
 
 class Edge_Stats(models.Model):
     edge_id = models.ForeignKey(Edge, on_delete=models.DO_NOTHING)
@@ -138,7 +138,7 @@ class Edge_Settings(models.Model):
         asyncio.run(web_socket.socket_c.prepare_and_send_data("edge_update", edge=edge, settings=ret))
 
     def __str__(self):
-        return self.edge_id.ip +  " Settings"
+        return self.edge_id.name + " Settings"
 
 # Connection module.
 class Connection(models.Model):
