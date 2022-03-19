@@ -13,11 +13,18 @@ def index(request):
         if edge is None:
             continue
         
-        stats = Edge_Stats.objects.filter(edge_id=edge).latest('id')
+        stats = None
         tot_pps = 0
         tot_mbps = 0
         cpu_load = 0
         
+        if stats is not None:
+            cpu_load = stats.cpu_load
+            for k, v in stats.__dict__.items():
+                if "pckts_ps" in k:
+                    tot_pps = tot_pps + int(v)
+                elif "bytes_ps" in k:
+                    tot_mbps = tot_mbps + int((int(v) / 1e6))
 
         pps[edge.id] = tot_pps
         mbps[edge.id] = tot_mbps
