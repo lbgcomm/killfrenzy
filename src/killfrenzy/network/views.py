@@ -10,6 +10,10 @@ def index(request):
     xdp_status = {}
 
 
+    for edge in edges:
+        if edge is None:
+            continue
+        
     ctx = {"edges": edges, "pps": pps, "mbps": mbps, "cpu_load": cpu_load, "xdp_status": xdp_status}
 
     return render(request, 'network/index.html', ctx)
