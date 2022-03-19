@@ -146,6 +146,7 @@ class Connection(models.Model):
         NONE = 0, "None"
         SRCDS = (1 << 0), "SRCDS"
         RUST = (1 << 1), "Rust"
+        SRCDS_CHALLENGE = (1 << 2), "SRCDS Challenge"
 
     class Protocols(models.TextChoices):
         UDP = "udp", "UDP"
