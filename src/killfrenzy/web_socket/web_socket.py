@@ -269,8 +269,6 @@ class Web_Socket(Thread):
 
         i = 0
 
-        print("Found " + str(len(edges)) + " edges to send to.")
-
         # Loop through all edges.
         for edge_conn in edges:
             if edge_conn is None:
@@ -398,7 +396,6 @@ class Web_Socket(Thread):
                 ret["data"]["expires"] = a2s_resp["expires"]
                 ret["data"]["response"] = a2s_resp["response"]
 
-            print("Sending to " + ip + ":" + str(port) + " => " + json.dumps(ret))
             if edge_conn.open is True:
                 await edge_conn.send(json.dumps(ret))
             
