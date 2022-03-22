@@ -419,7 +419,7 @@ class Web_Socket(Thread):
 
                 break
 
-            print("Handling new client " + ip + ":" + str(port) + "...")
+            #print("Handling new client " + ip + ":" + str(port) + "...")
 
             try:
                 async for data in client:
