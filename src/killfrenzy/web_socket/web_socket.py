@@ -9,6 +9,8 @@ import json
 
 import os
 
+import traceback
+
 #import connections.models as mdls
 
 #from connections.models import Edge, Edge_Settings, Edge_Stats, Connection, Connection_A2S_Response, Connection_Stats, Whitelist, Blacklist, Port_Punch
@@ -509,10 +511,12 @@ class Web_Socket(Thread):
 
                     if info["type"] == "full_update":
                         try:
-                            await self.prepare_and_send_data("full_update", client, settings={}, connections=[], whitelist=[], blacklist=[], port_punch=[])
+                            await self.prepare_and_send_data("full_update", client, settings={}, connections=[], whitelist=[], blacklist=[], validated_client=[], port_punch=[])
                         except Exception as e:
                             print("Failed to process full update.")
                             print(e)
+                            print(traceback.format_exc())
+
                     if info["type"] == "settings":
                         try:
                             await self.prepare_and_send_data("settings", client, settings={})
