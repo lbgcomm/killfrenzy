@@ -478,7 +478,6 @@ class Web_Socket(Thread):
             try:
                 async for data in client:
                     try:
-                        print(str(data))
                         info = json.loads(data)
                     except json.JSONDecodeError as e:
                         print("handler() :: Error handling JSON load.")
