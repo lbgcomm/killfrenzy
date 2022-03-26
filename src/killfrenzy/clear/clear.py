@@ -43,6 +43,7 @@ class Clear(Thread):
                 if (created + 300) < now:
                     # Delete.
                     await self.del_pp(pp["ip"], pp["port"], pp["service_ip"], pp["service_port"], pp["dest_ip"])
+                    await asyncio.sleep(1)
                     
             await asyncio.sleep(5)
 
