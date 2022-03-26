@@ -132,7 +132,12 @@ class Web_Socket(Thread):
     @sync_to_async
     def get_port_punch(self):
         import connections.models as mdls
-        return list(mdls.Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port', 'dest_ip'))
+        return list(mdls.Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port', 'dest_ip', 'last_seen', 'created'))
+
+    @sync_to_async
+    def get_validated_client(self):
+        import connections.models as mdls
+        return list(mdls.Validated_Client.objects.all().values('src_ip', 'src_port', 'dst_ip', 'dst_port', 'last_seen', 'created'))
 
     @sync_to_async
     def push_a2s_response(self, a2s_data):
@@ -232,6 +237,42 @@ class Web_Socket(Thread):
 
             pp.save()
 
+    @sync_to_async(thread_sensitive=False)
+    def push_validated_client(self, vc_data):
+        import connections.models as mdls
+
+        if "src_ip" not in vc_data:
+            print("push_validated_client() :: Source IP not valid.")
+
+            return
+
+        if "src_port" not in vc_data:
+            print("push_validated_client() :: Source Port not valid.")
+
+            return
+
+        if "dst_ip" not in vc_data:
+            print("push_validated_client() :: Destination IP not valid.")
+
+            return
+
+        if "dst_port" not in vc_data:
+            print("push_validated_client() :: Destination Port not valid.")
+
+            return
+
+        check = None
+
+        try:
+            check = mdls.Validated_Client.objects.get(src_ip=vc_data["src_ip"], src_port=vc_data["src_port"], dst_ip=vc_data["dst_ip"], dst_port=vc_data["dst_port"]).first()
+        except mdls.Validated_Client.DoesNotExist:
+            check = None
+
+        if check is None:
+            vc = mdls.Validated_Client(src_ip=vc_data["src_ip"], src_port=vc_data["src_port"], dst_ip=vc_data["dst_ip"], dst_port=vc_data["dst_port"])
+
+            vc.save()
+
     @sync_to_async
     def set_edge_status(self, edge, status):
         edge.status = status
@@ -256,7 +297,7 @@ class Web_Socket(Thread):
 
         return data
 
-    async def prepare_and_send_data(self, update_type="full_update", edge=None, settings=None, connections=None, whitelist=None, blacklist=None, port_punch=None, a2s_resp=None):
+    async def prepare_and_send_data(self, update_type="full_update", edge=None, settings=None, connections=None, whitelist=None, blacklist=None, port_punch=None, validated_client=None, a2s_resp=None):
         edges = list()
 
         # If we have one edge, just insert the one.
@@ -389,6 +430,17 @@ class Web_Socket(Thread):
                     for p in port_punch:
                         ret["data"]["port_punch"].append(p)
 
+            # Handle validated client.
+            if validated_client is not None and "delete" not in update_type and len(validated_client) < 1:
+                validated_client = await self.get_validated_client()
+            
+            if validated_client is not None:
+                if len(validated_client) > 0:
+                    ret["data"]["validated_client"] = []
+
+                    for v in validated_client:
+                        ret["data"]["validated_client"].append(v)
+
             # Handle A2S_INFO response.
             if a2s_resp is not None:
                 ret["data"]["ip"] = a2s_resp["ip"]
@@ -491,6 +543,12 @@ class Web_Socket(Thread):
                         except Exception as e:
                             print("Failed to process port punch update.")
                             print(e)
+                    elif info["type"] == "validated_client":
+                        try:
+                            await self.prepare_and_send_data("validated_client", client, validated_client=[])
+                        except Exception as e:
+                            print("Failed to process validated client update.")
+                            print(e)
                     elif info["type"] == "push_stats":
                         if "data" not in info:
                             continue
@@ -523,6 +581,19 @@ class Web_Socket(Thread):
                             await self.push_port_punch(pp_data)
                         except Exception as e:
                             print("Invalid port punch push.")
+                            print(e)
+
+                            continue
+                    elif info["type"] == "push_validated_client":
+                        if "data" not in info:
+                            continue
+
+                        vc_data = info["data"]
+
+                        try:
+                            await self.push_validated_client(vc_data)
+                        except Exception as e:
+                            print("Invalid validated client push.")
                             print(e)
 
                             continue

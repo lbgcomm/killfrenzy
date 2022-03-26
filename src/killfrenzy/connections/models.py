@@ -319,6 +319,9 @@ class Port_Punch(models.Model):
     service_port = models.IntegerField(verbose_name="Service Port", help_text="Service Port", default=0)
 
     dest_ip = models.CharField(verbose_name="Destination IP Address", help_text="The game server machine's IP address", max_length=32)
+    
+    last_seen = models.DateTimeField(editable = False, auto_now = True, null = True)
+    created = models.DateTimeField(editable = False, auto_now_add = True, null = True)
 
     def __str__(self):
         return self.ip + ":" + str(self.port)
@@ -346,6 +349,41 @@ class Port_Punch(models.Model):
     class Meta:
         verbose_name = "port punch"
         verbose_name_plural = "port punches"
+
+class Validated_Client(models.Model):
+    src_ip = models.CharField(verbose_name="Source IP", help_text="The source IP of client.", max_length=32)
+    src_port = models.IntegerField(verbose_name="Source Port", help_text="The source port of client.", default=0)
+
+    dst_ip = models.CharField(verbose_name="Destination IP", help_text="The destination IP of server.", max_length=32)
+    dst_port = models.IntegerField(verbose_name="Destination Port", help_text="The destination port of server.", default=0)
+
+    last_seen = models.DateTimeField(editable = False, auto_now = True, null = True)
+    created = models.DateTimeField(editable = False, auto_now_add = True, null = True)
+
+    def __str__(self):
+        return self.ip + ":" + str(self.port)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        ret = []
+        vc = {}
+
+        vc["src_ip"] = self.src_ip
+        vc["src_port"] = self.src_port
+        vc["dst_ip"] = self.dst_ip
+        vc["dst_port"] = self.dst_port
+
+        ret.append(vc)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("validated_client_update", validated_client=ret))
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "validated client"
+        verbose_name_plural = "validated clients"
 
 def delete_item(sender, instance, **kwargs):
     if sender == Connection:

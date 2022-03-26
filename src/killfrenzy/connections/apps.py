@@ -2,6 +2,7 @@ from django.apps import AppConfig
 import os
 
 import web_socket
+import clear
 
 from django.conf import settings
 
@@ -15,8 +16,10 @@ class ConnectionsConfig(AppConfig):
 
             if env is not None:
                 web_socket.socket_c.start()
+                clear.clear_c.start()
             else:
                 os.environ["WEBSERVER_SET"] = 'True'
         else:
             os.environ["WEBSERVER_SET"] = 'True'
             web_socket.socket_c.start()
+            clear.clear_c.start()
