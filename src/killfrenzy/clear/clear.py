@@ -40,7 +40,7 @@ class Clear(Thread):
                 created = pp["created"].timestamp()
                 now = time.time()
 
-                if (created + 1800) < now:
+                if (created + 300) < now:
                     # Delete.
                     await self.del_pp(pp["ip"], pp["port"], pp["service_ip"], pp["service_port"], pp["dest_ip"])
                     
