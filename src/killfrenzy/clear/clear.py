@@ -22,12 +22,12 @@ class Clear(Thread):
 
         print("Starting clear thread on PID #" + str(os.getpid()) + ".")
 
-    @sync_to_async
+    @sync_to_async(thread_sensitive=False)
     def get_pps(self):
         import connections.models as mdls
         return list(mdls.Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port', 'dest_ip', 'last_seen', 'created'))
 
-    @sync_to_async
+    @sync_to_async(thread_sensitive=False)
     def del_pp(self, ip, port, sip, sport, dip):
         import connections.models as mdls
         mdls.Port_Punch.objects.filter(ip=ip, port=port, service_ip=sip, service_port=sport, dest_ip=dip).delete()
