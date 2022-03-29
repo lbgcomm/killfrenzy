@@ -146,7 +146,7 @@ class Connection(models.Model):
         NONE = 0, "None"
         SRCDS = (1 << 0), "SRCDS"
         RUST = (1 << 1), "Rust"
-        GMOD = (1 << 2), "GMod"
+        GMOD = (1 << 2), "GMOD"
 
     class Protocols(models.TextChoices):
         UDP = "udp", "UDP"
