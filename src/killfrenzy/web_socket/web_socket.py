@@ -134,12 +134,12 @@ class Web_Socket(Thread):
     @sync_to_async
     def get_port_punch(self):
         import connections.models as mdls
-        return list(mdls.Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port', 'dest_ip', 'last_seen', 'created'))
+        return list(mdls.Port_Punch.objects.all().values('ip', 'port', 'service_ip', 'service_port', 'dest_ip'))
 
     @sync_to_async
     def get_validated_client(self):
         import connections.models as mdls
-        return list(mdls.Validated_Client.objects.all().values('src_ip', 'src_port', 'dst_ip', 'dst_port', 'last_seen', 'created'))
+        return list(mdls.Validated_Client.objects.all().values('src_ip', 'src_port', 'dst_ip', 'dst_port'))
 
     @sync_to_async
     def push_a2s_response(self, a2s_data):
