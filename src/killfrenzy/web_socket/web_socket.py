@@ -230,7 +230,7 @@ class Web_Socket(Thread):
         check = None
 
         try:
-            check = mdls.Port_Punch.objects.get(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"]).first()
+            check = mdls.Port_Punch.objects.get(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"])
         except mdls.Port_Punch.DoesNotExist:
             check = None
 
@@ -238,6 +238,8 @@ class Web_Socket(Thread):
             pp = mdls.Port_Punch(ip=pp_data["ip"], port=pp_data["port"], service_ip=pp_data["service_ip"], service_port=pp_data["service_port"], dest_ip=pp_data["dest_ip"])
 
             pp.save()
+        else:
+            check.save()
 
     @sync_to_async(thread_sensitive=False)
     def push_validated_client(self, vc_data):
@@ -266,7 +268,7 @@ class Web_Socket(Thread):
         check = None
 
         try:
-            check = mdls.Validated_Client.objects.get(src_ip=vc_data["src_ip"], src_port=vc_data["src_port"], dst_ip=vc_data["dst_ip"], dst_port=vc_data["dst_port"]).first()
+            check = mdls.Validated_Client.objects.get(src_ip=vc_data["src_ip"], src_port=vc_data["src_port"], dst_ip=vc_data["dst_ip"], dst_port=vc_data["dst_port"])
         except mdls.Validated_Client.DoesNotExist:
             check = None
 
@@ -274,6 +276,8 @@ class Web_Socket(Thread):
             vc = mdls.Validated_Client(src_ip=vc_data["src_ip"], src_port=vc_data["src_port"], dst_ip=vc_data["dst_ip"], dst_port=vc_data["dst_port"])
 
             vc.save()
+        else:
+            check.save()
 
     @sync_to_async
     def set_edge_status(self, edge, status):
@@ -574,7 +578,6 @@ class Web_Socket(Thread):
                         
                         if edge is not None:
                             await self.set_edge_xdp_status(edge, xdp_data["status"])
-
                     elif info["type"] == "push_port_punch":
                         if "data" not in info:
                             continue

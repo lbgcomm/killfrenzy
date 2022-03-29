@@ -146,7 +146,7 @@ class Connection(models.Model):
         NONE = 0, "None"
         SRCDS = (1 << 0), "SRCDS"
         RUST = (1 << 1), "Rust"
-        SRCDS_CHALLENGE = (1 << 2), "SRCDS Challenge"
+        GMOD = (1 << 2), "GMod"
 
     class Protocols(models.TextChoices):
         UDP = "udp", "UDP"
@@ -361,7 +361,7 @@ class Validated_Client(models.Model):
     created = models.DateTimeField(editable = False, auto_now_add = True, null = True)
 
     def __str__(self):
-        return self.ip + ":" + str(self.port)
+        return self.src_ip + ":" + str(self.src_port)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -429,6 +429,18 @@ def delete_item(sender, instance, **kwargs):
         ret.append(pp)
 
         asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_delete", port_punch=ret))
+    elif sender == Validated_Client:
+        ret = []
+        vc = {}
+
+        vc["src_ip"] = instance.src_ip
+        vc["src_port"] = instance.src_port
+        vc["dst_ip"] = instance.dst_ip
+        vc["dst_port"] = instance.dst_port
+
+        ret.append(vc)
+
+        asyncio.run(web_socket.socket_c.prepare_and_send_data("validated_client_delete", validated_client=ret))
 
 
 signals.post_delete.connect(receiver=delete_item, sender=Connection)
