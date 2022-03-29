@@ -327,21 +327,27 @@ class Port_Punch(models.Model):
         return self.ip + ":" + str(self.port)
 
     def save(self, *args, **kwargs):
+        new = False
+
+        if not self.id:
+            new = True
+
         super().save(*args, **kwargs)
 
-        ret = []
-        pp = {}
+        if new:
+            ret = []
+            pp = {}
 
-        pp["ip"] = self.ip
-        pp["port"] = self.port
-        pp["service_ip"] = self.service_ip
-        pp["service_port"] = self.service_port
+            pp["ip"] = self.ip
+            pp["port"] = self.port
+            pp["service_ip"] = self.service_ip
+            pp["service_port"] = self.service_port
 
-        pp["dest_ip"] = self.dest_ip
+            pp["dest_ip"] = self.dest_ip
 
-        ret.append(pp)
+            ret.append(pp)
 
-        asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_update", port_punch=ret))
+            asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_update", port_punch=ret))
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
@@ -364,19 +370,25 @@ class Validated_Client(models.Model):
         return self.src_ip + ":" + str(self.src_port)
 
     def save(self, *args, **kwargs):
+        new = False
+
+        if not self.id:
+            new = True
+
         super().save(*args, **kwargs)
 
-        ret = []
-        vc = {}
+        if new:
+            ret = []
+            vc = {}
 
-        vc["src_ip"] = self.src_ip
-        vc["src_port"] = self.src_port
-        vc["dst_ip"] = self.dst_ip
-        vc["dst_port"] = self.dst_port
+            vc["src_ip"] = self.src_ip
+            vc["src_port"] = self.src_port
+            vc["dst_ip"] = self.dst_ip
+            vc["dst_port"] = self.dst_port
 
-        ret.append(vc)
+            ret.append(vc)
 
-        asyncio.run(web_socket.socket_c.prepare_and_send_data("validated_client_update", validated_client=ret))
+            asyncio.run(web_socket.socket_c.prepare_and_send_data("validated_client_update", validated_client=ret))
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
