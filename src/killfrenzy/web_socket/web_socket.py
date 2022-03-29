@@ -455,7 +455,9 @@ class Web_Socket(Thread):
                 ret["data"]["response"] = a2s_resp["response"]
 
             if edge_conn.open is True:
-                await edge_conn.send(json.dumps(ret))
+                new_data = json.dumps(ret)
+                print("Sending => " + new_data)
+                await edge_conn.send(new_data)
             
             i = i + 1
 
