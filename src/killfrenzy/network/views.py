@@ -16,7 +16,7 @@ def index(request):
         try:
             stats = Edge_Stats.objects.filter(edge_id=edge).latest('id')
         except Exception:
-            continue
+            stats = None
         
         tot_pps = 0
         tot_mbps = 0
