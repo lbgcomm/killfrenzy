@@ -19,7 +19,7 @@ class Edge(models.Model):
         return self.name + " (" + self.ip + ")"
 
 class Edge_Stats(models.Model):
-    edge_id = models.ForeignKey(Edge, on_delete=models.DO_NOTHING)
+    edge_id = models.ForeignKey(Edge, on_delete=models.CASCADE)
     sdate = models.DateTimeField(auto_now=True)
 
     bla_pckts = models.BigIntegerField(null=True, editable=False)
@@ -238,7 +238,7 @@ class Connection(models.Model):
         return self.bind_ip + ":" + str(self.bind_port)
 
 class Connection_A2S_Response(models.Model):
-    connection_id = ForeignKey(Connection, on_delete=models.DO_NOTHING)
+    connection_id = ForeignKey(Connection, on_delete=models.CASCADE)
     response = models.CharField(verbose_name="A2S_INFO Response", help_text="A2S_INFO response text.", max_length=2048)
     expires = models.BigIntegerField(verbose_name="Cache Expire Time", help_text="Response's expire time in nanoseconds.", null=True)
 
@@ -262,7 +262,7 @@ class Connection_A2S_Response(models.Model):
         verbose_name_plural = "A2S_INFO responses"
 
 class Connection_Stats(models.Model):
-    connection_id = ForeignKey(Connection, on_delete=models.DO_NOTHING)
+    connection_id = ForeignKey(Connection, on_delete=models.CASCADE)
     pps = models.BigIntegerField(null=True, editable=False)
     bps = models.BigIntegerField(null=True, editable=False)
 
