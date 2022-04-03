@@ -10,7 +10,7 @@ def index(request):
     xdp_status = {}
 
     for edge in edges:
-        if edge is None or edge.id == 23:
+        if edge is None:
             continue
         
         try:
