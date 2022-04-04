@@ -314,7 +314,7 @@ class Port_Punch(models.Model):
     auto_added = models.BooleanField(verbose_name="Auto Added", help_text="Whether this was added by system", editable=False, default=False)
     ip = models.CharField(verbose_name="IP Address", help_text="IP address", max_length=32)
     port = models.IntegerField(verbose_name="Port", help_text="Port", default=0)
-    count = models.IntegerField(editable = False, default=0)
+    count = models.IntegerField(editable = False, default=0, null = True)
 
     service_ip = models.CharField(verbose_name="Service IP Address", help_text="Service IP address", max_length=32)
     service_port = models.IntegerField(verbose_name="Service Port", help_text="Service Port", default=0)
