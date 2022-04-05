@@ -333,7 +333,7 @@ class Port_Punch(models.Model):
         if not self.id or (self.cnt is not None and self.cnt < 5):
             new = True
 
-        self.cnt = self.count + 1
+        self.cnt = self.cnt + 1
 
         super().save(*args, **kwargs)
 
