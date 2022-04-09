@@ -350,7 +350,7 @@ class Port_Punch(models.Model):
 
             ret.append(pp)
 
-            print("[KF] Port punching " + str(self.ip) + ":" + str(self.port) + " => " + str(self.service_ip) + ":" + str(self.service_port) + " (" + str(self.dest_ip) + ")...")
+            #print("[KF] Port punching " + str(self.ip) + ":" + str(self.port) + " => " + str(self.service_ip) + ":" + str(self.service_port) + " (" + str(self.dest_ip) + ")...")
 
             asyncio.run(web_socket.socket_c.prepare_and_send_data("port_punch_update", port_punch=ret))
 
