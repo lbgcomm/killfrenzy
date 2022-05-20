@@ -41,6 +41,16 @@ class Clear(Thread):
     def del_vc(self, src_ip, src_port, dst_ip, dst_port):
         import connections.models as mdls
         mdls.Validated_Client.objects.filter(src_ip=src_ip, src_port=src_port, dst_ip=dst_ip, dst_port=dst_port).delete()
+
+    @sync_to_async(thread_sensitive=False)
+    def get_stats(self):
+        import connections.models as mdls
+        return list(mdls.Edge_Stats.objects.all().values('id', 'sdate'))
+
+    @sync_to_async(thread_sensitive=False)
+    def del_stat(self, id):
+        import connections.models as mdls
+        mdls.Edge_Stats.objects.filter(id = id).delete()
     
     async def clear_items(self):
         while True:
@@ -65,8 +75,19 @@ class Clear(Thread):
                     # Delete.
                     await self.del_vc(vc["src_ip"], vc["src_port"], vc["dst_ip"], vc["dst_port"])
                     await asyncio.sleep(1)
+
+            stats = await self.get_stats()
+
+            for stat in stats:
+                last_seen = stat["sdate"].timestamp()
+                now = time.time()
+
+                if (last_seen + 2678400) < now:
+                    # Delete.
+                    await self.del_stat(vc["id"])
+                    await asyncio.sleep(1)
                     
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
 
     async def start_clear(self):
         while True:
