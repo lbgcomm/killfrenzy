@@ -85,6 +85,7 @@ class Clear(Thread):
                 if (last_seen + 2678400) < now:
                     # Delete.
                     await self.del_stat(stat["id"])
+                    print("Deleting stat with id " + str(stat["id"]))
                     await asyncio.sleep(1)
 
             print("Clearing items.")
