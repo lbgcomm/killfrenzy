@@ -23,3 +23,4 @@ class ConnectionsConfig(AppConfig):
             os.environ["WEBSERVER_SET"] = 'True'
             web_socket.socket_c.start()
             clear.clear_c.start()
+            print("Web socket and clearer both running.")

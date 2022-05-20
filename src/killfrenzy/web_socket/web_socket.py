@@ -626,7 +626,6 @@ class Web_Socket(Thread):
         
     async def start_server(self):
         async with websockets.serve(self.handler, "0.0.0.0", 8003, compression=None):
-            print("Web socket listening on port 8003...")
             await asyncio.Future()
 
 socket_c = Web_Socket()
