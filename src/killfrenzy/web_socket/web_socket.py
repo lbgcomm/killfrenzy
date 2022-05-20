@@ -21,8 +21,7 @@ class Web_Socket(Thread):
         self.daemon = True
 
         self.conns = {}
-        self.started = False
-        self.loop = None        
+        self.started = False      
 
     def thread_id(self):
         return self.native_id
@@ -626,8 +625,6 @@ class Web_Socket(Thread):
             await self.set_edge_status(edge, False)
         
     async def start_server(self):
-        self.loop = asyncio.get_event_loop()
-
         async with websockets.serve(self.handler, "0.0.0.0", 8003, compression=None):
             print("Web socket listening on port 8003...")
             await asyncio.Future()

@@ -13,8 +13,7 @@ class Clear(Thread):
         super().__init__()
         self.daemon = True
 
-        self.started = False
-        self.loop = None        
+        self.started = False      
 
     def run(self):
         self.started = True
@@ -70,8 +69,6 @@ class Clear(Thread):
             await asyncio.sleep(5)
 
     async def start_clear(self):
-        self.loop = asyncio.get_event_loop()
-
         while True:
             task = asyncio.create_task(self.clear_items())
 
