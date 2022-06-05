@@ -15,12 +15,12 @@ class ConnectionsConfig(AppConfig):
             env = os.environ.get("WEBSERVER_SET")
 
             if env is not None:
-                web_socket.socket_c.start()
+                #web_socket.socket_c.start()
                 clear.clear_c.start()
             else:
                 os.environ["WEBSERVER_SET"] = 'True'
         else:
             os.environ["WEBSERVER_SET"] = 'True'
-            web_socket.socket_c.start()
+            #web_socket.socket_c.start()
             clear.clear_c.start()
             print("Web socket and clearer both running.")
